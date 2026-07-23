@@ -99,6 +99,11 @@ jobs:
               'export function sanitizeText(value: string, maxLength = MAX_TEXT_LENGTH): string {\n  return decodeEntities(value)\n    .replace(/<[^>]*>/g, " ")\n    .replace(/[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F]/g, "")\n    .replace(/\\s+/g, " ")\n    .trim()\n    .slice(0, maxLength);\n}',
               'export function sanitizeText(value: string, maxLength = MAX_TEXT_LENGTH): string {\n  const withoutMarkup = decodeEntities(value).replace(/<[^>]*>/g, " ");\n  const withoutControlCharacters = Array.from(withoutMarkup).filter(isAllowedTextCharacter).join("");\n  return withoutControlCharacters.replace(/\\s+/g, " ").trim().slice(0, maxLength);\n}\n\nfunction isAllowedTextCharacter(character: string): boolean {\n  const codePoint = character.codePointAt(0);\n  return (\n    codePoint === undefined ||\n    (codePoint > 8 &&\n      codePoint !== 11 &&\n      codePoint !== 12 &&\n      (codePoint < 14 || codePoint > 31) &&\n      codePoint !== 127)\n  );\n}',
           )
+          replace_once(
+              "src/lib/edge-validation.ts",
+              'function string(value: unknown, field: string, maxLength: number): string {\n  if (typeof value !== "string") fail(`${field} must be a string.`);\n  const normalized = value.trim();\n  if (!normalized) fail(`${field} is required.`);\n  if (normalized.length > maxLength) fail(`${field} exceeds ${maxLength} characters.`);\n  if (/[\\u0000-\\u001F\\u007F]/.test(normalized)) fail(`${field} contains control characters.`);\n  return normalized;\n}',
+              'function string(value: unknown, field: string, maxLength: number): string {\n  if (typeof value !== "string") fail(`${field} must be a string.`);\n  const normalized = value.trim();\n  if (!normalized) fail(`${field} is required.`);\n  if (normalized.length > maxLength) fail(`${field} exceeds ${maxLength} characters.`);\n  if (Array.from(normalized).some(isControlCharacter)) fail(`${field} contains control characters.`);\n  return normalized;\n}\n\nfunction isControlCharacter(character: string): boolean {\n  const codePoint = character.codePointAt(0);\n  return codePoint !== undefined && (codePoint <= 31 || codePoint === 127);\n}',
+          )
           PY
 
           if grep -R -n -E '[A-Za-z0-9_\]\)]!' --include='*.ts' scripts src test; then
