@@ -1,4 +1,4 @@
-name: Diagnose failed deploy
+name: Diagnose current deploy
 
 on:
   push:
@@ -16,13 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      TARGET_SHA: f4809b4438d8b30b7c438fdcfa16b16d42186fd1
+      TARGET_SHA: 7a357822767fdb7d3e7d76449e1d8982d40c458b
     steps:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
 
-      - name: Collect sanitized deploy failure details
+      - name: Collect sanitized deploy details
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -30,19 +30,25 @@ jobs:
           set -euo pipefail
           mkdir -p _diagnostics /tmp/deploy-logs
 
-          runs_json=$(gh api \
-            -H 'Accept: application/vnd.github+json' \
-            "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${TARGET_SHA}&event=push&per_page=20")
+          for attempt in $(seq 1 60); do
+            runs_json=$(gh api \
+              -H 'Accept: application/vnd.github+json' \
+              "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${TARGET_SHA}&event=push&per_page=20")
+            run_id=$(jq -r '
+              .workflow_runs
+              | map(select(.path == ".github/workflows/deploy.yml" or .name == "Validate and Deploy Worker"))
+              | sort_by(.created_at)
+              | reverse
+              | .[0].id // empty
+            ' <<<"$runs_json")
+            status=$(jq -r --argjson run_id "${run_id:-0}" '.workflow_runs | map(select(.id == $run_id)) | .[0].status // empty' <<<"$runs_json")
+            if [[ -n "$run_id" && "$status" == completed ]]; then
+              break
+            fi
+            sleep 5
+          done
 
-          run_id=$(jq -r '
-            .workflow_runs
-            | map(select(.path == ".github/workflows/deploy.yml" or .name == "Validate and Deploy Worker"))
-            | sort_by(.created_at)
-            | reverse
-            | .[0].id // empty
-          ' <<<"$runs_json")
-
-          if [[ -z "$run_id" ]]; then
+          if [[ -z "${run_id:-}" ]]; then
             {
               echo "No deploy run found for ${TARGET_SHA}."
               echo
@@ -91,5 +97,5 @@ jobs:
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m 'chore: capture sanitized deploy diagnostics'
+          git commit -m 'chore: capture current deploy diagnostics'
           git push origin HEAD:main
