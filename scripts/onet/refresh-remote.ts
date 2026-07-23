@@ -39,16 +39,12 @@ const { directory, manifest } = await writeImportBundle(transformed, outputRoot)
 const existing = await remoteQuery(
   `SELECT version, source_sha256, status FROM dataset_versions WHERE version = ${sqlLiteral(version)}`,
 );
+const existingVersion = existing[0];
 const cleanupRows = await countExistingVersionRows(version);
-const plannedRemoteWrites = manifest.predictedRowWrites + cleanupRows;
-if (plannedRemoteWrites > manifest.rowWriteBudget) {
-  throw new Error(
-    `Planned ${plannedRemoteWrites} remote row writes (${manifest.predictedRowWrites} inserts/activation plus ${cleanupRows} cleanup deletes) exceeds the configured budget of ${manifest.rowWriteBudget}.`,
-  );
-}
+
 if (
-  existing[0]?.source_sha256 === release.sourceSha256 &&
-  existing[0]?.status === "active" &&
+  existingVersion?.source_sha256 === release.sourceSha256 &&
+  existingVersion?.status === "active" &&
   !force
 ) {
   await writeSummary({
@@ -62,21 +58,50 @@ if (
   process.exit(0);
 }
 
+if (
+  existingVersion?.source_sha256 === release.sourceSha256 &&
+  existingVersion?.status === "staging" &&
+  !force
+) {
+  const verification = await verifyImport(
+    directory,
+    manifest.expectedCounts,
+    manifest.occupationCount,
+  );
+  const finalVersion = await activateImport(directory, version);
+  await writeSummary({
+    status: "resumed_and_activated",
+    detectedVersion: version,
+    previousActiveVersion: activeVersion || null,
+    activeVersion: finalVersion,
+    sourceSha256: release.sourceSha256,
+    stagedRowCount: cleanupRows,
+    cleanupRowWrites: 0,
+    plannedRemoteWrites: 4,
+    expectedCounts: manifest.expectedCounts,
+    verification,
+    warnings: manifest.warnings,
+  });
+  console.log(`Verified and activated the existing staged O*NET ${version} import.`);
+  process.exit(0);
+}
+
+const plannedRemoteWrites = manifest.predictedRowWrites + cleanupRows;
+if (plannedRemoteWrites > manifest.rowWriteBudget) {
+  throw new Error(
+    `Planned ${plannedRemoteWrites} remote row writes (${manifest.predictedRowWrites} inserts/activation plus ${cleanupRows} cleanup deletes) exceeds the configured budget of ${manifest.rowWriteBudget}.`,
+  );
+}
+
 await executeFile(join(directory, "00-prelude.sql"));
 for (const relative of manifest.chunkFiles) await executeFile(join(directory, relative));
 
-const verificationRows = await executeFile(join(directory, "98-verify.sql"), true);
-const verification = Object.fromEntries(
-  verificationRows.map((row) => [String(row.metric), Number(row.value)]),
+const verification = await verifyImport(
+  directory,
+  manifest.expectedCounts,
+  manifest.occupationCount,
 );
-validateVerification(manifest.expectedCounts, verification, manifest.occupationCount);
-await executeFile(join(directory, "99-activate.sql"));
-
-const finalVersion = await queryScalar(
-  "SELECT value FROM database_metadata WHERE key = 'active_dataset_version'",
-  "value",
-);
-if (finalVersion !== version) throw new Error(`Activation failed: expected ${version}, found ${finalVersion}.`);
+const finalVersion = await activateImport(directory, version);
 
 await writeSummary({
   status: "activated",
@@ -114,6 +139,33 @@ async function countExistingVersionRows(version: string): Promise<number> {
   ];
   const rows = await remoteQuery(`SELECT ${terms.join(" + ")} AS row_count`);
   return Number(rows[0]?.row_count ?? 0);
+}
+
+async function verifyImport(
+  directory: string,
+  expectedCounts: Record<string, number>,
+  occupationCount: number,
+): Promise<Record<string, number>> {
+  const rows = await executeFile(join(directory, "98-verify.sql"), true);
+  const row = rows[0];
+  if (!row) throw new Error("Verification query returned no metrics.");
+  const verification = Object.fromEntries(
+    Object.entries(row).map(([metric, value]) => [metric, Number(value)]),
+  );
+  validateVerification(expectedCounts, verification, occupationCount);
+  return verification;
+}
+
+async function activateImport(directory: string, version: string): Promise<string> {
+  await executeFile(join(directory, "99-activate.sql"));
+  const finalVersion = await queryScalar(
+    "SELECT value FROM database_metadata WHERE key = 'active_dataset_version'",
+    "value",
+  );
+  if (finalVersion !== version) {
+    throw new Error(`Activation failed: expected ${version}, found ${finalVersion}.`);
+  }
+  return finalVersion;
 }
 
 async function remoteQuery(sql: string): Promise<Record<string, unknown>[]> {
