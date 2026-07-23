@@ -1,0 +1,2 @@
+Initial O*NET import outcome: failure
+Run: https://github.com/TBosak/onet-gpt-actions/actions/runs/30040584551
