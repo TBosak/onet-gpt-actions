@@ -32,7 +32,7 @@ export async function runWrangler(args: string[], logPath?: string): Promise<Wra
 }
 
 export function parseD1Rows(stdout: string): Record<string, unknown>[] {
-  const parsed = JSON.parse(stdout) as unknown;
+  const parsed = parseJsonPayload(stdout);
   const arrays: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
   for (const item of arrays) {
     if (!item || typeof item !== "object") continue;
@@ -44,6 +44,21 @@ export function parseD1Rows(stdout: string): Record<string, unknown>[] {
     }
   }
   return [];
+}
+
+function parseJsonPayload(stdout: string): unknown {
+  const lines = stdout.split(/\r?\n/);
+  for (let index = 0; index < lines.length; index += 1) {
+    const firstLine = lines[index]?.trimStart() ?? "";
+    if (!firstLine.startsWith("[") && !firstLine.startsWith("{")) continue;
+    const candidate = [firstLine, ...lines.slice(index + 1)].join("\n").trim();
+    try {
+      return JSON.parse(candidate) as unknown;
+    } catch {
+      // Wrangler may emit progress lines before its JSON payload; try the next JSON-looking line.
+    }
+  }
+  throw new Error("Wrangler output did not contain a valid JSON payload.");
 }
 
 function processEnv(): Record<string, string> {
