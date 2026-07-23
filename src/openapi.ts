@@ -90,85 +90,13 @@ const scoreObject = {
 
 const recoveryToken = { type: "string", minLength: 40, maxLength: 100 } as const;
 
-const locationSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["radiusMiles"],
-  properties: {
-    postalCode: { type: "string", pattern: "^\\d{5}(?:-\\d{4})?$" },
-    city: { type: "string", maxLength: 100 },
-    state: { type: "string", pattern: "^[A-Za-z]{2}$" },
-    radiusMiles: { type: "integer", minimum: 1, maximum: 100, default: 25 },
-  },
-  description: "Use ZIP, city/state, or state only. Never send a street address.",
-} as const;
-
-const resumeProfileSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["skills", "experienceYears", "education", "targetOccupations"],
-  properties: {
-    skills: {
-      type: "array",
-      maxItems: 50,
-      uniqueItems: true,
-      items: { type: "string", maxLength: 100 },
-    },
-    experienceYears: { type: "number", minimum: 0, maximum: 70 },
-    education: { type: "string", maxLength: 100 },
-    credentials: {
-      type: "array",
-      maxItems: 25,
-      uniqueItems: true,
-      items: { type: "string", maxLength: 100 },
-    },
-    targetOccupations: {
-      type: "array",
-      maxItems: 10,
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["onetCode", "confidence"],
-        properties: {
-          onetCode: { type: "string", pattern: "^\\d{2}-\\d{4}\\.\\d{2}$" },
-          confidence: { type: "number", minimum: 0, maximum: 1 },
-        },
-      },
-    },
-  },
-  description:
-    "Temporary structured job-relevant profile only. Do not include names, contact data, raw resume text, street addresses, case data, or other identifiers.",
-} as const;
-
-const preferencesSchema = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    postedWithinDays: { type: "integer", minimum: 0, maximum: 90, default: 30 },
-    minimumHourlyPay: { type: "number", minimum: 0, maximum: 500 },
-    employmentTypes: {
-      type: "array",
-      maxItems: 8,
-      items: { type: "string", maxLength: 40 },
-    },
-    shiftPreferences: {
-      type: "array",
-      maxItems: 8,
-      items: { type: "string", maxLength: 40 },
-    },
-    transportationReliable: { type: "boolean" },
-    keywords: { type: "string", maxLength: 100 },
-    limit: { type: "integer", minimum: 1, maximum: 20, default: 15 },
-  },
-} as const;
-
 export const openapi = {
   openapi: "3.1.0",
   info: {
     title: "O*NET GPT Data API",
-    version: "3.0.0",
+    version: "4.0.0",
     description:
-      "Occupational intelligence and a local conversational Interest Profiler built from downloadable O*NET data, plus privacy-bounded EDGE employment support using CareerOneStop behind the Worker. The Worker never calls O*NET Web Services at runtime. CareerOneStop credentials are Worker secrets and are never exposed through this API.",
+      "Local occupational intelligence and a conversational Interest Profiler built from downloadable O*NET data. The Worker never calls O*NET Web Services at runtime and does not expose CareerOneStop operations; current jobs, labor-market data, training, credentials, and support resources use a separate direct CareerOneStop Action.",
   },
   servers: [{ url: "https://onet-gpt-api.timb63701.workers.dev" }],
   security: [{ ApiKeyAuth: [] }],
@@ -196,9 +124,6 @@ export const openapi = {
       OccupationSummary: occupationSummary,
       InterestFilters: filtersSchema,
       InterestScore: scoreObject,
-      ParticipantLocation: locationSchema,
-      ResumeProfile: resumeProfileSchema,
-      JobPreferences: preferencesSchema,
     },
   },
   paths: {
@@ -412,123 +337,6 @@ export const openapi = {
           },
         }),
         responses: { "200": { description: "Profile removed or revoked" }, ...standardErrors },
-      },
-    },
-    "/v1/edge/jobs/search": {
-      post: {
-        operationId: "findJobsForParticipant",
-        summary: "Find and transparently rank current local jobs for a structured participant profile",
-        description:
-          "The Worker sends only bounded O*NET codes or minimal keywords, location, radius, and provider filters to CareerOneStop. Never include direct identifiers, raw resumes, or case data.",
-        requestBody: jsonBody({
-          type: "object",
-          additionalProperties: false,
-          required: ["resumeProfile", "location", "preferences"],
-          properties: {
-            resumeProfile: resumeProfileSchema,
-            location: locationSchema,
-            preferences: preferencesSchema,
-          },
-        }),
-        responses: { "200": { description: "Current jobs with local, explained fit scores" }, ...standardErrors },
-      },
-    },
-    "/v1/edge/jobs/details": {
-      post: {
-        operationId: "getJobMatchDetails",
-        summary: "Retrieve and analyze one CareerOneStop job listing",
-        requestBody: jsonBody({
-          type: "object",
-          additionalProperties: false,
-          required: ["jobId", "resumeProfile"],
-          properties: {
-            jobId: { type: "string", maxLength: 200 },
-            resumeProfile: resumeProfileSchema,
-            location: locationSchema,
-            preferences: preferencesSchema,
-          },
-        }),
-        responses: { "200": { description: "Normalized job details, evidence, gaps, and apply URL" }, ...standardErrors },
-      },
-    },
-    "/v1/edge/career-outlook": {
-      post: {
-        operationId: "getLocalCareerOutlook",
-        summary: "Combine local occupation context with current CareerOneStop LMI",
-        requestBody: jsonBody({
-          type: "object",
-          additionalProperties: false,
-          required: ["onetCode", "location"],
-          properties: {
-            onetCode: { type: "string", pattern: "^\\d{2}-\\d{4}\\.\\d{2}$" },
-            location: locationSchema,
-            includeSalary: { type: "boolean", default: false },
-          },
-        }),
-        responses: { "200": { description: "Local/state/national LMI, wages, source vintage, and caveats" }, ...standardErrors },
-      },
-    },
-    "/v1/edge/training": {
-      post: {
-        operationId: "findTrainingOptions",
-        summary: "Find bounded nearby or online training options",
-        requestBody: jsonBody({
-          type: "object",
-          additionalProperties: false,
-          required: ["onetCode", "location"],
-          properties: {
-            onetCode: { type: "string", pattern: "^\\d{2}-\\d{4}\\.\\d{2}$" },
-            location: locationSchema,
-            keyword: { type: "string", maxLength: 100 },
-            programLength: { type: "string", maxLength: 40 },
-            programFormat: { type: "string", maxLength: 40 },
-            limit: { type: "integer", minimum: 1, maximum: 20, default: 10 },
-          },
-        }),
-        responses: { "200": { description: "Training programs and shortlisted details" }, ...standardErrors },
-      },
-    },
-    "/v1/edge/requirements": {
-      post: {
-        operationId: "checkCareerRequirements",
-        summary: "Find occupational licenses and certifications for a state",
-        requestBody: jsonBody({
-          type: "object",
-          additionalProperties: false,
-          required: ["onetCode", "state"],
-          properties: {
-            onetCode: { type: "string", pattern: "^\\d{2}-\\d{4}\\.\\d{2}$" },
-            state: { type: "string", pattern: "^[A-Za-z]{2}$" },
-            limit: { type: "integer", minimum: 1, maximum: 20, default: 10 },
-          },
-        }),
-        responses: { "200": { description: "Separate licensing and certification evidence" }, ...standardErrors },
-      },
-    },
-    "/v1/edge/support": {
-      post: {
-        operationId: "findEmploymentSupport",
-        summary: "Find American Job Centers and explicitly requested reentry or justice-impacted resources",
-        requestBody: jsonBody({
-          type: "object",
-          additionalProperties: false,
-          required: ["categories", "location"],
-          properties: {
-            categories: {
-              type: "array",
-              minItems: 1,
-              maxItems: 3,
-              uniqueItems: true,
-              items: {
-                type: "string",
-                enum: ["american-job-centers", "reentry-programs", "justice-impacted-state-resources"],
-              },
-            },
-            location: locationSchema,
-            limit: { type: "integer", minimum: 1, maximum: 20, default: 10 },
-          },
-        }),
-        responses: { "200": { description: "Requested public employment-support resources" }, ...standardErrors },
       },
     },
   },
