@@ -1,4 +1,4 @@
-# One-shot staged-import verification and activation.
+# One-shot staged verification after Wrangler JSON parser correction.
 name: Refresh O*NET Data
 
 on:
