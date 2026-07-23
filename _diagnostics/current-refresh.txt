@@ -1,4 +1,4 @@
-Run ID: 30041009161
-Status: in_progress
-Conclusion: pending
-URL: https://github.com/TBosak/onet-gpt-actions/actions/runs/30041009161
+Run ID: 30041779077
+Status: completed
+Conclusion: failure
+URL: https://github.com/TBosak/onet-gpt-actions/actions/runs/30041779077
