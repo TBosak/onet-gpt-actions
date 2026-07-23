@@ -1,0 +1,40 @@
+name: Diagnose current O*NET refresh
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnose-refresh.yml'
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Record current refresh status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: cddbc2c8e01c7230770bb4926b227dbbe135d03b
+        shell: bash
+        run: |
+          set -euo pipefail
+          runs=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${TARGET_SHA}&per_page=20")
+          run=$(jq -c '.workflow_runs | map(select(.path == ".github/workflows/refresh-onet.yml")) | sort_by(.created_at) | reverse | .[0] // {}' <<<"$runs")
+          mkdir -p _diagnostics
+          {
+            echo "Run ID: $(jq -r '.id // "not-found"' <<<"$run")"
+            echo "Status: $(jq -r '.status // "not-found"' <<<"$run")"
+            echo "Conclusion: $(jq -r '.conclusion // "pending"' <<<"$run")"
+            echo "URL: $(jq -r '.html_url // "not-found"' <<<"$run")"
+          } > _diagnostics/current-refresh.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add _diagnostics/current-refresh.txt
+          git commit -m 'chore: record current refresh status'
+          git push origin HEAD:main
