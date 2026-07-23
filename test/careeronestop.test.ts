@@ -106,6 +106,28 @@ describe("CareerOneStop adapter", () => {
     expect(JSON.stringify(failure)).not.toContain("private-token");
   });
 
+  it("trims whitespace from runtime credentials before constructing requests", async () => {
+    let capturedUrl = "";
+    let capturedAuthorization = "";
+    const client = new CareerOneStopClient(
+      { userId: "  edge-user\n", apiToken: "  provider-secret\r\n" },
+      {
+        retries: 0,
+        fetcher: async (input, init) => {
+          capturedUrl = String(input);
+          capturedAuthorization = new Headers(init?.headers).get("authorization") ?? "";
+          return jsonResponse({});
+        },
+      },
+    );
+
+    await client.validateLocation("63701");
+
+    expect(capturedUrl).toContain("/v1/location/edge-user/63701");
+    expect(capturedUrl).not.toContain("%0A");
+    expect(capturedAuthorization).toBe("Bearer provider-secret");
+  });
+
   it("normalizes malformed and untrusted provider responses", async () => {
     const client = new CareerOneStopClient(
       { userId: "edge-user", apiToken: "provider-secret" },
