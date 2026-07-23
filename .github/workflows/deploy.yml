@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - '_diagnostics/**'
       - '.github/workflows/diagnose-*.yml'
+      - '**/*.md'
   workflow_dispatch:
 
 permissions:
@@ -22,7 +23,7 @@ jobs:
     environment: production
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4.3.1
+        uses: actions/checkout@v6.0.2
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2.2.0
