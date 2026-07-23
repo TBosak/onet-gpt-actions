@@ -1,0 +1,168 @@
+$ biome lint .
+biome.json:12:13 deserialize  DEPRECATED  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i The use of the recommended field has been deprecated, and will removed in the next major version of Biome. Use preset instead.
+  
+    10 │     "lineWidth": 100
+    11 │   },
+  > 12 │   "linter": {
+       │             ^
+  > 13 │     "enabled": true,
+        ...
+  > 19 │     }
+  > 20 │   },
+       │   ^
+    21 │   "javascript": {
+    22 │     "formatter": {
+  
+  i Migrate the configuration with the proper command
+  
+  $ biome migrate
+  
+
+src/lib/careeronestop.ts:244:11 lint/complexity/noUselessContinue  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Unnecessary continue statement
+  
+    242 │         if (attempt < this.retries) {
+    243 │           await backoff(attempt);
+  > 244 │           continue;
+        │           ^^^^^^^^^
+    245 │         }
+    246 │       } finally {
+  
+  i Safe fix: Delete the unnecessary continue statement
+  
+    242 242 │           if (attempt < this.retries) {
+    243 243 │             await backoff(attempt);
+    244     │ - ··········continue;
+    245 244 │           }
+    246 245 │         } finally {
+  
+
+src/lib/validation.ts:34:43 lint/complexity/noUselessEscapeInRegex  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━
+
+  i The character doesn't need to be escaped.
+  
+    32 │     .trim()
+    33 │     .split(/\s+/)
+  > 34 │     .map((term) => term.replace(/["*:^(){}\[\]]/g, "").trim())
+       │                                           ^^
+    35 │     .filter(Boolean)
+    36 │     .slice(0, 12);
+  
+  i The character should only be escaped if it is outside a character class or under the `v` flag.
+  
+  i Safe fix: Unescape the character.
+  
+    34 │ ····.map((term)·=>·term.replace(/["*:^(){}\[\]]/g,·"").trim())
+       │                                           -                   
+
+scripts/onet/refresh-remote.ts:1:17 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Several of these imports are unused.
+  
+  > 1 │ import { mkdir, readFile, writeFile } from "node:fs/promises";
+      │                 ^^^^^^^^
+    2 │ import { join } from "node:path";
+    3 │ import { detectLatestRelease, downloadRelease } from "./source";
+  
+  i Unused imports might be the result of an incomplete refactoring.
+  
+  i Unsafe fix: Remove the unused imports.
+  
+    1 │ import·{·mkdir,·readFile,·writeFile·}·from·"node:fs/promises";
+      │                 ----------                                    
+
+scripts/onet/transform.ts:188:11 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  ! This variable name is unused.
+  
+    186 │     const occupation = occupations.get(text(row, "onetsoc_code"));
+    187 │     const id = text(row, "element_id");
+  > 188 │     const name = text(row, "element_name");
+        │           ^^^^
+    189 │     if (!occupation || !id) continue;
+    190 │ 
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend name with an underscore.
+  
+    186 186 │       const occupation = occupations.get(text(row, "onetsoc_code"));
+    187 187 │       const id = text(row, "element_id");
+    188     │ - ····const·name·=·text(row,·"element_name");
+        188 │ + ····const·_name·=·text(row,·"element_name");
+    189 189 │       if (!occupation || !id) continue;
+    190 190 │   
+  
+
+src/lib/edge.ts:2:8 lint/style/useImportType  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! All these imports are only used as types.
+  
+    1 │ import { getActiveVersion, parseProfile } from "./db";
+  > 2 │ import { CareerOneStopClient } from "./careeronestop";
+      │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │ import type { OccupationRow } from "../types";
+    4 │ 
+  
+  i Importing the types with import type ensures that they are removed by the compilers and avoids loading unnecessary modules.
+  
+  i Safe fix: Use import type.
+  
+    2 │ import·type·{·CareerOneStopClient·}·from·"./careeronestop";
+      │        +++++                                               
+
+scripts/validate-interest-profiler.ts:85:25 lint/suspicious/useIterableCallbackReturn ━━━━━━━━━━━━━━
+
+  × This callback passed to forEach() iterable method should not return a value.
+  
+    83 │     if (rule.maxItems !== undefined && value.length > rule.maxItems) errors.push(`${path} has too many items.`);
+    84 │     const itemRule = rule.items;
+  > 85 │     if (itemRule) value.forEach((item, index) => validateSchema(item, itemRule, `${path}[${index}]`, errors));
+       │                         ^^^^^^^
+    86 │   }
+    87 │   if (value && typeof value === "object" && !Array.isArray(value)) {
+  
+  i Either remove this return or remove the returned value.
+  
+    83 │     if (rule.maxItems !== undefined && value.length > rule.maxItems) errors.push(`${path} has too many items.`);
+    84 │     const itemRule = rule.items;
+  > 85 │     if (itemRule) value.forEach((item, index) => validateSchema(item, itemRule, `${path}[${index}]`, errors));
+       │                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    86 │   }
+    87 │   if (value && typeof value === "object" && !Array.isArray(value)) {
+  
+
+src/lib/edge.ts:502:11 lint/suspicious/useIterableCallbackReturn ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This callback passed to forEach() iterable method should not return a value.
+  
+    500 │   }
+    501 │   if (Array.isArray(value)) {
+  > 502 │     value.forEach((item, index) => inspect(item, `${path}[${index}]`));
+        │           ^^^^^^^
+    503 │     return;
+    504 │   }
+  
+  i Either remove this return or remove the returned value.
+  
+    500 │   }
+    501 │   if (Array.isArray(value)) {
+  > 502 │     value.forEach((item, index) => inspect(item, `${path}[${index}]`));
+        │                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    503 │     return;
+    504 │   }
+  
+
+Checked 37 files in 53ms. No fixes applied.
+Found 2 errors.
+Found 3 warnings.
+Found 3 infos.
+lint ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+error: script "lint" exited with code 1
