@@ -1,4 +1,4 @@
-# One-shot retry after correcting the D1 cleanup-count query.
+# One-shot staged-import verification and activation.
 name: Refresh O*NET Data
 
 on:
