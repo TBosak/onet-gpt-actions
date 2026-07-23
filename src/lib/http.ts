@@ -67,7 +67,7 @@ export async function secureEqual(left: string, right: string): Promise<boolean>
   const b = new Uint8Array(rightHash);
   let difference = left.length === right.length ? 0 : 1;
   for (let index = 0; index < a.length; index += 1) {
-    difference |= a[index]! ^ b[index]!;
+    difference |= (a[index] ?? 0) ^ (b[index] ?? 0);
   }
   return difference === 0;
 }

@@ -1,8 +1,11 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const assetPath = new URL("../src/data/interest-profiler/mini-ip-30.en.json", import.meta.url);
-const schemaPath = new URL("../src/data/interest-profiler/mini-ip-30.schema.json", import.meta.url);
+const scriptDirectory = dirname(fileURLToPath(import.meta.url));
+const assetPath = resolve(scriptDirectory, "../src/data/interest-profiler/mini-ip-30.en.json");
+const schemaPath = resolve(scriptDirectory, "../src/data/interest-profiler/mini-ip-30.schema.json");
 const asset = JSON.parse(await readFile(assetPath, "utf8")) as Record<string, unknown>;
 const schema = JSON.parse(await readFile(schemaPath, "utf8")) as JsonSchema;
 validateSchema(asset, schema, "$", []);
@@ -81,7 +84,12 @@ function validateSchema(value: unknown, rule: JsonSchema, path: string, errors: 
   if (Array.isArray(value)) {
     if (rule.minItems !== undefined && value.length < rule.minItems) errors.push(`${path} has too few items.`);
     if (rule.maxItems !== undefined && value.length > rule.maxItems) errors.push(`${path} has too many items.`);
-    if (rule.items) value.forEach((item, index) => validateSchema(item, rule.items!, `${path}[${index}]`, errors));
+    const itemRule = rule.items;
+    if (itemRule) {
+      value.forEach((item, index) => {
+        validateSchema(item, itemRule, `${path}[${index}]`, errors);
+      });
+    }
   }
   if (value && typeof value === "object" && !Array.isArray(value)) {
     const object = value as Record<string, unknown>;

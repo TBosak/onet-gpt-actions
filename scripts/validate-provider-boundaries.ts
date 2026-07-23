@@ -1,12 +1,13 @@
 import { readdir, readFile } from "node:fs/promises";
-import { extname, join, relative } from "node:path";
+import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { operationIds, openapi } from "../src/openapi";
 
-const root = fileURLToPath(new URL("..", import.meta.url));
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const runtimeFiles = await collect(join(root, "src"));
 const workflowFiles = await collect(join(root, ".github", "workflows"));
-const configFiles = [join(root, "wrangler.jsonc")];
+const wranglerConfigPath = join(root, "wrangler.jsonc");
+const configFiles = [wranglerConfigPath];
 const allFiles = [...runtimeFiles, ...workflowFiles, ...configFiles];
 const contents = new Map<string, string>();
 for (const path of allFiles) contents.set(path, await readFile(path, "utf8"));
@@ -38,7 +39,7 @@ for (const path of workflowFiles) {
   assert(!/GPT_API_KEY/.test(text), `${relative(root, path)} must not consume the persistent Worker API secret.`);
 }
 
-const wrangler = stripJsonComments(contents.get(configFiles[0]!) ?? "");
+const wrangler = stripJsonComments(contents.get(wranglerConfigPath) ?? "");
 const parsed = JSON.parse(wrangler) as { secrets?: { required?: string[] } };
 const expectedSecrets = ["GPT_API_KEY", "CAREERONESTOP_USER_ID", "CAREERONESTOP_API_TOKEN"];
 assert(

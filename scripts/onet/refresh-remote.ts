@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { detectLatestRelease, downloadRelease } from "./source";
 import { writeImportBundle, sqlLiteral } from "./sql";

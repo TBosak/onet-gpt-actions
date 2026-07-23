@@ -1,5 +1,5 @@
 import { getActiveVersion, parseProfile } from "./db";
-import { CareerOneStopClient } from "./careeronestop";
+import type { CareerOneStopClient } from "./careeronestop";
 import type { OccupationRow } from "../types";
 
 export const JOB_FIT_VERSION = "edge-job-fit-v1";
@@ -499,7 +499,9 @@ function inspect(value: unknown, path: string): void {
     return;
   }
   if (Array.isArray(value)) {
-    value.forEach((item, index) => inspect(item, `${path}[${index}]`));
+    value.forEach((item, index) => {
+      inspect(item, `${path}[${index}]`);
+    });
     return;
   }
   if (!value || typeof value !== "object") return;
@@ -743,13 +745,13 @@ async function mapWithConcurrency<T, R>(
   mapper: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
   const results = new Array<R>(items.length);
-  let nextIndex = 0;
+  const iterator = items.entries();
   const workers = Array.from({ length: Math.min(Math.max(1, concurrency), items.length) }, async () => {
     while (true) {
-      const index = nextIndex;
-      nextIndex += 1;
-      if (index >= items.length) return;
-      results[index] = await mapper(items[index]!, index);
+      const next = iterator.next();
+      if (next.done) return;
+      const [index, item] = next.value;
+      results[index] = await mapper(item, index);
     }
   });
   await Promise.all(workers);

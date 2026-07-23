@@ -192,8 +192,13 @@ function string(value: unknown, field: string, maxLength: number): string {
   const normalized = value.trim();
   if (!normalized) fail(`${field} is required.`);
   if (normalized.length > maxLength) fail(`${field} exceeds ${maxLength} characters.`);
-  if (/[\u0000-\u001F\u007F]/.test(normalized)) fail(`${field} contains control characters.`);
+  if (Array.from(normalized).some(isControlCharacter)) fail(`${field} contains control characters.`);
   return normalized;
+}
+
+function isControlCharacter(character: string): boolean {
+  const codePoint = character.codePointAt(0);
+  return codePoint !== undefined && (codePoint <= 31 || codePoint === 127);
 }
 
 function stringArray(value: unknown, field: string, maxItems: number, maxLength: number): string[] {

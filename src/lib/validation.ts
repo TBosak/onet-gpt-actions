@@ -31,7 +31,7 @@ export function toFtsQuery(value: string): string {
     .normalize("NFKC")
     .trim()
     .split(/\s+/)
-    .map((term) => term.replace(/["*:^(){}\[\]]/g, "").trim())
+    .map((term) => term.replace(/["*:^(){}[\]]/g, "").trim())
     .filter(Boolean)
     .slice(0, 12);
   return terms.map((term) => `"${term.replaceAll('"', '""')}"*`).join(" AND ");

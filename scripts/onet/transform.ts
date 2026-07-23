@@ -185,7 +185,6 @@ export function transformRelease(release: DownloadedRelease): TransformResult {
     const scale = text(row, "scale_id").toUpperCase();
     const occupation = occupations.get(text(row, "onetsoc_code"));
     const id = text(row, "element_id");
-    const name = text(row, "element_name");
     if (!occupation || !id) continue;
 
     if (scale === "IH") {
@@ -196,9 +195,11 @@ export function transformRelease(release: DownloadedRelease): TransformResult {
         throw new Error(`Invalid IH high-point value for ${occupation.code} ${id}: ${text(row, "data_value")}.`);
       }
       if (value > 0) {
+        const area = IH_AREA_BY_CODE[value];
+        if (!area) throw new Error(`Unknown IH high-point code ${value} for ${occupation.code} ${id}.`);
         occupation.interestHighPoints.push({
           rank: rankIndex + 1,
-          area: IH_AREA_BY_CODE[value]!,
+          area,
           code: value,
         });
       }
@@ -214,7 +215,8 @@ export function transformRelease(release: DownloadedRelease): TransformResult {
     if (dimensions.has(id)) throw new Error(`Duplicate OI dimension ${id} for ${occupation.code}.`);
     dimensions.add(id);
     oiDimensionsByOccupation.set(occupation.code, dimensions);
-    const canonicalName = OI_ELEMENTS.get(id)!;
+    const canonicalName = OI_ELEMENTS.get(id);
+    if (!canonicalName) throw new Error(`Unknown OI dimension ${id} for ${occupation.code}.`);
     occupation.interests.push({ id, name: canonicalName, value, scale: "OI" });
     elementRecords.set(`interest:${id}`, elementRecord(id, release.version, "interest", canonicalName));
     scoreRecords.push({
@@ -282,11 +284,12 @@ export function transformRelease(release: DownloadedRelease): TransformResult {
   for (const row of fileRows(release, "related_occupations")) {
     const code = text(row, "onetsoc_code");
     const relatedCode = text(row, "related_onetsoc_code");
-    if (!occupations.has(code) || !occupations.has(relatedCode)) continue;
+    const occupation = occupations.get(code);
+    if (!occupation || !occupations.has(relatedCode)) continue;
     const tierRaw = text(row, "relatedness_tier").toLowerCase();
     const relationType = tierRaw.startsWith("primary") ? "primary" : "supplemental";
     const index = number(row, "related_index", "index");
-    occupations.get(code)!.related.push({ code: relatedCode, tier: relationType, index });
+    occupation.related.push({ code: relatedCode, tier: relationType, index });
     relatedRecords.push({
       table: "related_occupations",
       values: {

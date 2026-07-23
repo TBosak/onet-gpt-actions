@@ -241,7 +241,6 @@ export class CareerOneStopClient {
         }
         if (attempt < this.retries) {
           await backoff(attempt);
-          continue;
         }
       } finally {
         clearTimeout(timer);
@@ -254,12 +253,21 @@ export class CareerOneStopClient {
 }
 
 export function sanitizeText(value: string, maxLength = MAX_TEXT_LENGTH): string {
-  return decodeEntities(value)
-    .replace(/<[^>]*>/g, " ")
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, maxLength);
+  const withoutMarkup = decodeEntities(value).replace(/<[^>]*>/g, " ");
+  const withoutControlCharacters = Array.from(withoutMarkup).filter(isAllowedTextCharacter).join("");
+  return withoutControlCharacters.replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
+
+function isAllowedTextCharacter(character: string): boolean {
+  const codePoint = character.codePointAt(0);
+  return (
+    codePoint === undefined ||
+    (codePoint > 8 &&
+      codePoint !== 11 &&
+      codePoint !== 12 &&
+      (codePoint < 14 || codePoint > 31) &&
+      codePoint !== 127)
+  );
 }
 
 export function sanitizeValue(value: unknown): unknown {

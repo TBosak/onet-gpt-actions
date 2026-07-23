@@ -16,6 +16,7 @@ export const REQUIRED_FILES = [
 
 export type RequiredFile = (typeof REQUIRED_FILES)[number];
 export type JsonRow = Record<string, unknown>;
+export type Fetcher = (url: string, init?: RequestInit) => Promise<Response>;
 
 export interface OnetFile {
   name: RequiredFile;
@@ -31,7 +32,7 @@ export interface DownloadedRelease {
   files: OnetFile[];
 }
 
-export async function detectLatestRelease(fetcher: typeof fetch = fetch): Promise<string> {
+export async function detectLatestRelease(fetcher: Fetcher = fetch): Promise<string> {
   const response = await fetcher(ONET_DATABASE_PAGE, {
     headers: { "user-agent": "onet-gpt-api-release-check/1.0" },
     redirect: "follow",
@@ -41,7 +42,11 @@ export async function detectLatestRelease(fetcher: typeof fetch = fetch): Promis
   const versions = [
     ...html.matchAll(/O\*NET(?:®|&reg;)?\s+(\d{1,2}\.\d{1,2})\s+Database/gi),
     ...html.matchAll(/db_(\d{1,2})_(\d{1,2})_json/gi),
-  ].map((match) => (match[2] ? `${match[1]}.${match[2]}` : match[1]!));
+  ].flatMap((match) => {
+    const majorOrVersion = match[1];
+    if (!majorOrVersion) return [];
+    return [match[2] ? `${majorOrVersion}.${match[2]}` : majorOrVersion];
+  });
   const unique = [...new Set(versions)].sort(compareVersions).reverse();
   if (!unique[0]) throw new Error("Could not detect an O*NET release from the official database page.");
   return unique[0];
@@ -50,7 +55,7 @@ export async function detectLatestRelease(fetcher: typeof fetch = fetch): Promis
 export async function downloadRelease(
   version: string,
   root = ".data/raw",
-  fetcher: typeof fetch = fetch,
+  fetcher: Fetcher = fetch,
 ): Promise<DownloadedRelease> {
   const versionKey = version.replace(".", "_");
   const directory = join(root, version);

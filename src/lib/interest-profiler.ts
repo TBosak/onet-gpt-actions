@@ -173,8 +173,11 @@ export function pearsonCorrelation(left: readonly number[], right: readonly numb
   let leftSquares = 0;
   let rightSquares = 0;
   for (let index = 0; index < left.length; index += 1) {
-    const leftDelta = left[index]! - leftMean;
-    const rightDelta = right[index]! - rightMean;
+    const leftValue = left[index];
+    const rightValue = right[index];
+    if (leftValue === undefined || rightValue === undefined) return null;
+    const leftDelta = leftValue - leftMean;
+    const rightDelta = rightValue - rightMean;
     numerator += leftDelta * rightDelta;
     leftSquares += leftDelta * leftDelta;
     rightSquares += rightDelta * rightDelta;
