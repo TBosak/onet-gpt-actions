@@ -20,7 +20,7 @@ jobs:
       - name: Record current refresh status
         env:
           GH_TOKEN: ${{ github.token }}
-          TARGET_SHA: cddbc2c8e01c7230770bb4926b227dbbe135d03b
+          TARGET_SHA: ff320822d5a5775cdef3dd7e2af6825bbe45aa1c
         shell: bash
         run: |
           set -euo pipefail
