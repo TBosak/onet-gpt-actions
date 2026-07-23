@@ -65,8 +65,8 @@ jobs:
           )
           replace_once(
               "scripts/onet/transform.ts",
-              '    const name = text(row, "element_name");\n',
-              "",
+              '    const id = text(row, "element_id");\n    const name = text(row, "element_name");\n    if (!occupation || !id) continue;',
+              '    const id = text(row, "element_id");\n    if (!occupation || !id) continue;',
           )
           replace_once(
               "scripts/onet/refresh-remote.ts",
