@@ -22,7 +22,7 @@ jobs:
         with:
           bun-version: 1.3.14
 
-      - name: Apply explicit safety guards
+      - name: Apply source repairs
         shell: bash
         run: |
           set -euo pipefail
@@ -64,9 +64,19 @@ jobs:
               "occupation.related.push({ code: relatedCode, tier: relationType, index });",
           )
           replace_once(
+              "scripts/onet/transform.ts",
+              '    const name = text(row, "element_name");\n',
+              "",
+          )
+          replace_once(
+              "scripts/onet/refresh-remote.ts",
+              'import { mkdir, readFile, writeFile } from "node:fs/promises";',
+              'import { mkdir, writeFile } from "node:fs/promises";',
+          )
+          replace_once(
               "scripts/validate-interest-profiler.ts",
               'if (rule.items) value.forEach((item, index) => validateSchema(item, rule.items!, `${path}[${index}]`, errors));',
-              'const itemRule = rule.items;\n    if (itemRule) value.forEach((item, index) => validateSchema(item, itemRule, `${path}[${index}]`, errors));',
+              'const itemRule = rule.items;\n    if (itemRule) {\n      value.forEach((item, index) => {\n        validateSchema(item, itemRule, `${path}[${index}]`, errors);\n      });\n    }',
           )
           replace_once(
               "scripts/validate-provider-boundaries.ts",
@@ -88,11 +98,26 @@ jobs:
               "const leftDelta = left[index]! - leftMean;\n    const rightDelta = right[index]! - rightMean;",
               "const leftValue = left[index];\n    const rightValue = right[index];\n    if (leftValue === undefined || rightValue === undefined) return null;\n    const leftDelta = leftValue - leftMean;\n    const rightDelta = rightValue - rightMean;",
           )
+          replace_once(
+              "src/lib/edge.ts",
+              'import { CareerOneStopClient } from "./careeronestop";',
+              'import type { CareerOneStopClient } from "./careeronestop";',
+          )
+          replace_once(
+              "src/lib/edge.ts",
+              'value.forEach((item, index) => inspect(item, `${path}[${index}]`));',
+              'value.forEach((item, index) => {\n      inspect(item, `${path}[${index}]`);\n    });',
+          )
           replace_once("src/lib/edge.ts", "let nextIndex = 0;", "const iterator = items.entries();")
           replace_once(
               "src/lib/edge.ts",
               "const index = nextIndex;\n      nextIndex += 1;\n      if (index >= items.length) return;\n      results[index] = await mapper(items[index]!, index);",
               "const next = iterator.next();\n      if (next.done) return;\n      const [index, item] = next.value;\n      results[index] = await mapper(item, index);",
+          )
+          replace_once(
+              "src/lib/careeronestop.ts",
+              "await backoff(attempt);\n          continue;",
+              "await backoff(attempt);",
           )
           replace_once(
               "src/lib/careeronestop.ts",
@@ -103,6 +128,11 @@ jobs:
               "src/lib/edge-validation.ts",
               'function string(value: unknown, field: string, maxLength: number): string {\n  if (typeof value !== "string") fail(`${field} must be a string.`);\n  const normalized = value.trim();\n  if (!normalized) fail(`${field} is required.`);\n  if (normalized.length > maxLength) fail(`${field} exceeds ${maxLength} characters.`);\n  if (/[\\u0000-\\u001F\\u007F]/.test(normalized)) fail(`${field} contains control characters.`);\n  return normalized;\n}',
               'function string(value: unknown, field: string, maxLength: number): string {\n  if (typeof value !== "string") fail(`${field} must be a string.`);\n  const normalized = value.trim();\n  if (!normalized) fail(`${field} is required.`);\n  if (normalized.length > maxLength) fail(`${field} exceeds ${maxLength} characters.`);\n  if (Array.from(normalized).some(isControlCharacter)) fail(`${field} contains control characters.`);\n  return normalized;\n}\n\nfunction isControlCharacter(character: string): boolean {\n  const codePoint = character.codePointAt(0);\n  return codePoint !== undefined && (codePoint <= 31 || codePoint === 127);\n}',
+          )
+          replace_once(
+              "src/lib/validation.ts",
+              'term.replace(/["*:^(){}\\[\\]]/g, "")',
+              'term.replace(/["*:^(){}[\\]]/g, "")',
           )
           PY
 
