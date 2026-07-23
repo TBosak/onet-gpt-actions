@@ -57,18 +57,22 @@ export class CareerOneStopClient {
   private readonly fetcher: ProviderFetcher;
   private readonly timeoutMs: number;
   private readonly retries: number;
+  private readonly credentials: CareerOneStopCredentials;
 
   constructor(
-    private readonly credentials: CareerOneStopCredentials,
+    credentials: CareerOneStopCredentials,
     options: CareerOneStopClientOptions = {},
   ) {
-    if (!credentials.userId.trim() || !credentials.apiToken.trim()) {
+    const userId = credentials.userId.trim();
+    const apiToken = credentials.apiToken.trim();
+    if (!userId || !apiToken) {
       throw new ProviderError(
         503,
         "provider_not_configured",
         "CareerOneStop runtime credentials are not configured on the Worker.",
       );
     }
+    this.credentials = { userId, apiToken };
     this.fetcher = options.fetcher ?? fetch;
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.retries = options.retries ?? 1;
@@ -246,9 +250,15 @@ export class CareerOneStopClient {
         clearTimeout(timer);
       }
     }
-    throw new ProviderError(503, "provider_unavailable", "CareerOneStop could not be reached.", {
-      failureType: lastFailure instanceof Error ? lastFailure.name : "unknown",
-    });
+    const details = safeNetworkFailureDetails(lastFailure);
+    console.error(
+      JSON.stringify({
+        provider: "CareerOneStop",
+        code: "provider_unavailable",
+        ...details,
+      }),
+    );
+    throw new ProviderError(503, "provider_unavailable", "CareerOneStop could not be reached.", details);
   }
 }
 
@@ -294,6 +304,38 @@ function decodeEntities(value: string): string {
     .replaceAll("&gt;", ">")
     .replaceAll("&quot;", '"')
     .replaceAll("&#39;", "'");
+}
+
+function safeNetworkFailureDetails(error: unknown): Record<string, string> {
+  if (!(error instanceof Error)) {
+    return { failureType: "unknown", failureCategory: "unknown" };
+  }
+
+  const message = error.message.toLowerCase();
+  let failureCategory = "network";
+  if (
+    message.includes("header") ||
+    message.includes("bytestring") ||
+    message.includes("character") ||
+    message.includes("invalid value")
+  ) {
+    failureCategory = "request_construction";
+  } else if (message.includes("dns") || message.includes("resolve") || message.includes("host")) {
+    failureCategory = "dns";
+  } else if (
+    message.includes("tls") ||
+    message.includes("certificate") ||
+    message.includes("handshake")
+  ) {
+    failureCategory = "tls";
+  } else if (message.includes("connection") || message.includes("connect")) {
+    failureCategory = "connection";
+  }
+
+  return {
+    failureType: error.name || "Error",
+    failureCategory,
+  };
 }
 
 async function backoff(attempt: number): Promise<void> {
