@@ -18,12 +18,14 @@ describe("bounded SQL generation", () => {
     );
   });
 
-  it("includes integrity metrics in verification SQL", () => {
+  it("includes integrity metrics in one D1-compatible verification query", () => {
     const sql = verificationSql("30.3");
     expect(sql).toContain("invalid_profile_json");
     expect(sql).toContain("orphan_related");
     expect(sql).toContain("occupation_search");
     expect(sql).toContain("oi_complete_occupations");
     expect(sql).toContain("ih_rows_in_oi_scores");
+    expect(sql).not.toContain("UNION ALL");
+    expect(sql.trimStart().startsWith("SELECT")).toBe(true);
   });
 });
