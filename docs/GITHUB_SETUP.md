@@ -1,29 +1,51 @@
 # GitHub repository setup
 
-The repository should be named `onet-gpt-api` and use `main` as its default branch.
+This repository is `TBosak/onet-gpt-actions` and uses `main` as its default branch.
 
-## Create and push
+## GitHub authentication
 
-From the directory containing this scaffold:
+Authenticate GitHub CLI before pushing or managing Actions configuration:
 
 ```bash
-git init
-git add .
-git commit -m "Build O*NET, Interest Profiler, and EDGE Worker API"
-git branch -M main
-gh repo create onet-gpt-api --private --source=. --remote=origin --push
+gh auth login --hostname github.com --git-protocol https --web
+gh auth setup-git
+gh auth status
 ```
 
-Choose public visibility only after reviewing licensing, privacy, and operational documentation.
+## Production environment and GitHub secrets
 
-## GitHub secrets and environment
-
-Create a protected GitHub environment named `production`, then add exactly:
+Both deployment workflows use the protected GitHub environment named `production`. Create or confirm that environment, then add exactly these two environment secrets:
 
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN`
 
-Do not add these Worker runtime secrets to ordinary GitHub Actions configuration:
+From the repository directory:
+
+```bash
+gh api --method PUT repos/TBosak/onet-gpt-actions/environments/production
+
+gh secret set CLOUDFLARE_ACCOUNT_ID \
+  --env production \
+  --repo TBosak/onet-gpt-actions
+
+gh secret set CLOUDFLARE_API_TOKEN \
+  --env production \
+  --repo TBosak/onet-gpt-actions
+
+gh secret list \
+  --env production \
+  --repo TBosak/onet-gpt-actions
+```
+
+Each `gh secret set` command prompts for the value without placing it in the command line. The API token should be account-scoped and limited to Workers Scripts: Edit, D1: Edit, and Account Settings: Read. Do not use the Global API Key.
+
+After both secrets are listed, trigger deployment:
+
+```bash
+gh workflow run deploy.yml --repo TBosak/onet-gpt-actions
+```
+
+Do not add these Worker runtime secrets to GitHub Actions:
 
 - `GPT_API_KEY`
 - `CAREERONESTOP_USER_ID`
@@ -33,9 +55,10 @@ Set those directly on the existing Worker through Cloudflare Dashboard or Wrangl
 
 ## Workflow behavior
 
-- **Validate and Deploy Worker** runs the complete CI suite before deploying source to the fixed Worker.
-- **Refresh O*NET Data** runs the same suite before detecting, transforming, validating, importing, and activating a changed downloadable O*NET release.
+- **Validate and Deploy Worker** installs the pinned dependencies, runs the complete CI suite, verifies the two Cloudflare deployment credentials, and invokes the repository's pinned Wrangler CLI directly.
+- **Refresh O*NET Data** performs the same credential preflight before detecting, transforming, validating, importing, and activating a changed downloadable O*NET release.
 - Neither workflow calls CareerOneStop, consumes CareerOneStop credentials, provisions runtime secrets, or calls O*NET Web Services.
+- Documentation-only and removed diagnostic-file changes do not trigger Worker deployment.
 
 ## Recommended branch rules
 
