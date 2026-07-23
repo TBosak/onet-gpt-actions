@@ -1,0 +1,9 @@
+Initial O*NET import outcome: manually verified and activated after staged-import parser failure
+Dataset version: 30.3
+Activated at: 2026-07-23 20:28:55 UTC
+Occupations: 1016
+FTS search rows: 1016
+Interest-profile occupations with six valid OI dimensions: 923
+Validation: no invalid profile JSON, invalid job zones, incomplete OI vectors, IH/OI contamination, or orphan score/technology/related-occupation rows
+Original failed workflow run: https://github.com/TBosak/onet-gpt-actions/actions/runs/30041779077
+Root cause: Wrangler emitted upload-progress lines before its JSON result; repository parser and regression test were subsequently updated.
