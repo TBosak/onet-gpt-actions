@@ -158,83 +158,86 @@ export function sqlLiteral(value: string | number | null): string {
 
 export function verificationSql(version: string): string {
   const quoted = sqlLiteral(version);
-  const tables = [
-    "occupations",
-    "occupation_search",
-    "elements",
-    "occupation_scores",
-    "technologies",
-    "occupation_technologies",
-    "related_occupations",
-  ];
-  const counts = tables
-    .map(
-      (table) =>
-        `SELECT ${sqlLiteral(table)} AS metric, COUNT(*) AS value FROM ${table} WHERE dataset_version = ${quoted}`,
-    )
-    .join("\nUNION ALL\n");
-  return `${counts}
-UNION ALL
-SELECT 'invalid_profile_json' AS metric, COUNT(*) AS value
-FROM occupations WHERE dataset_version = ${quoted} AND json_valid(profile_json) = 0
-UNION ALL
-SELECT 'invalid_job_zone' AS metric, COUNT(*) AS value
-FROM occupations
-WHERE dataset_version = ${quoted} AND job_zone IS NOT NULL AND job_zone NOT BETWEEN 1 AND 5
-UNION ALL
-SELECT 'known_codes' AS metric, COUNT(*) AS value
-FROM occupations
-WHERE dataset_version = ${quoted} AND code IN ('11-1011.00', '15-1252.00', '29-1141.00')
-UNION ALL
-SELECT 'oi_matchable_occupations' AS metric, COUNT(DISTINCT occupation_code) AS value
-FROM occupation_scores
-WHERE dataset_version = ${quoted} AND scale_id = 'OI'
-UNION ALL
-SELECT 'oi_complete_occupations' AS metric, COUNT(*) AS value
-FROM (
-  SELECT occupation_code
-  FROM occupation_scores
-  WHERE dataset_version = ${quoted} AND scale_id = 'OI'
-  GROUP BY occupation_code
-  HAVING COUNT(*) = 6
-     AND COUNT(DISTINCT element_id) = 6
-     AND SUM(CASE WHEN element_id IN ('1.B.1.a', '1.B.1.b', '1.B.1.c', '1.B.1.d', '1.B.1.e', '1.B.1.f') THEN 0 ELSE 1 END) = 0
-)
-UNION ALL
-SELECT 'invalid_oi_dimension_count' AS metric, COUNT(*) AS value
-FROM (
-  SELECT occupation_code
-  FROM occupation_scores
-  WHERE dataset_version = ${quoted} AND scale_id = 'OI'
-  GROUP BY occupation_code
-  HAVING COUNT(*) <> 6
-      OR COUNT(DISTINCT element_id) <> 6
-      OR SUM(CASE WHEN element_id IN ('1.B.1.a', '1.B.1.b', '1.B.1.c', '1.B.1.d', '1.B.1.e', '1.B.1.f') THEN 0 ELSE 1 END) <> 0
-)
-UNION ALL
-SELECT 'ih_rows_in_oi_scores' AS metric, COUNT(*) AS value
-FROM occupation_scores
-WHERE dataset_version = ${quoted}
-  AND scale_id = 'OI'
-  AND element_id IN ('1.B.1.g', '1.B.1.h', '1.B.1.i')
-UNION ALL
-SELECT 'orphan_scores' AS metric, COUNT(*) AS value
-FROM occupation_scores s
-LEFT JOIN occupations o ON o.code = s.occupation_code AND o.dataset_version = s.dataset_version
-LEFT JOIN elements e ON e.id = s.element_id AND e.dataset_version = s.dataset_version
-WHERE s.dataset_version = ${quoted} AND (o.code IS NULL OR e.id IS NULL)
-UNION ALL
-SELECT 'orphan_technologies' AS metric, COUNT(*) AS value
-FROM occupation_technologies ot
-LEFT JOIN occupations o ON o.code = ot.occupation_code AND o.dataset_version = ot.dataset_version
-LEFT JOIN technologies t ON t.id = ot.technology_id AND t.dataset_version = ot.dataset_version
-WHERE ot.dataset_version = ${quoted} AND (o.code IS NULL OR t.id IS NULL)
-UNION ALL
-SELECT 'orphan_related' AS metric, COUNT(*) AS value
-FROM related_occupations r
-LEFT JOIN occupations o ON o.code = r.occupation_code AND o.dataset_version = r.dataset_version
-LEFT JOIN occupations ro ON ro.code = r.related_code AND ro.dataset_version = r.dataset_version
-WHERE r.dataset_version = ${quoted} AND (o.code IS NULL OR ro.code IS NULL);`;
+  return `SELECT
+  (SELECT COUNT(*) FROM occupations WHERE dataset_version = ${quoted}) AS occupations,
+  (SELECT COUNT(*) FROM occupation_search WHERE dataset_version = ${quoted}) AS occupation_search,
+  (SELECT COUNT(*) FROM elements WHERE dataset_version = ${quoted}) AS elements,
+  (SELECT COUNT(*) FROM occupation_scores WHERE dataset_version = ${quoted}) AS occupation_scores,
+  (SELECT COUNT(*) FROM technologies WHERE dataset_version = ${quoted}) AS technologies,
+  (SELECT COUNT(*) FROM occupation_technologies WHERE dataset_version = ${quoted}) AS occupation_technologies,
+  (SELECT COUNT(*) FROM related_occupations WHERE dataset_version = ${quoted}) AS related_occupations,
+  (
+    SELECT COUNT(*)
+    FROM occupations
+    WHERE dataset_version = ${quoted} AND json_valid(profile_json) = 0
+  ) AS invalid_profile_json,
+  (
+    SELECT COUNT(*)
+    FROM occupations
+    WHERE dataset_version = ${quoted} AND job_zone IS NOT NULL AND job_zone NOT BETWEEN 1 AND 5
+  ) AS invalid_job_zone,
+  (
+    SELECT COUNT(*)
+    FROM occupations
+    WHERE dataset_version = ${quoted} AND code IN ('11-1011.00', '15-1252.00', '29-1141.00')
+  ) AS known_codes,
+  (
+    SELECT COUNT(DISTINCT occupation_code)
+    FROM occupation_scores
+    WHERE dataset_version = ${quoted} AND scale_id = 'OI'
+  ) AS oi_matchable_occupations,
+  (
+    SELECT COUNT(*)
+    FROM (
+      SELECT occupation_code
+      FROM occupation_scores
+      WHERE dataset_version = ${quoted} AND scale_id = 'OI'
+      GROUP BY occupation_code
+      HAVING COUNT(*) = 6
+         AND COUNT(DISTINCT element_id) = 6
+         AND SUM(CASE WHEN element_id IN ('1.B.1.a', '1.B.1.b', '1.B.1.c', '1.B.1.d', '1.B.1.e', '1.B.1.f') THEN 0 ELSE 1 END) = 0
+    ) AS complete_oi_profiles
+  ) AS oi_complete_occupations,
+  (
+    SELECT COUNT(*)
+    FROM (
+      SELECT occupation_code
+      FROM occupation_scores
+      WHERE dataset_version = ${quoted} AND scale_id = 'OI'
+      GROUP BY occupation_code
+      HAVING COUNT(*) <> 6
+          OR COUNT(DISTINCT element_id) <> 6
+          OR SUM(CASE WHEN element_id IN ('1.B.1.a', '1.B.1.b', '1.B.1.c', '1.B.1.d', '1.B.1.e', '1.B.1.f') THEN 0 ELSE 1 END) <> 0
+    ) AS invalid_oi_profiles
+  ) AS invalid_oi_dimension_count,
+  (
+    SELECT COUNT(*)
+    FROM occupation_scores
+    WHERE dataset_version = ${quoted}
+      AND scale_id = 'OI'
+      AND element_id IN ('1.B.1.g', '1.B.1.h', '1.B.1.i')
+  ) AS ih_rows_in_oi_scores,
+  (
+    SELECT COUNT(*)
+    FROM occupation_scores s
+    LEFT JOIN occupations o ON o.code = s.occupation_code AND o.dataset_version = s.dataset_version
+    LEFT JOIN elements e ON e.id = s.element_id AND e.dataset_version = s.dataset_version
+    WHERE s.dataset_version = ${quoted} AND (o.code IS NULL OR e.id IS NULL)
+  ) AS orphan_scores,
+  (
+    SELECT COUNT(*)
+    FROM occupation_technologies ot
+    LEFT JOIN occupations o ON o.code = ot.occupation_code AND o.dataset_version = ot.dataset_version
+    LEFT JOIN technologies t ON t.id = ot.technology_id AND t.dataset_version = ot.dataset_version
+    WHERE ot.dataset_version = ${quoted} AND (o.code IS NULL OR t.id IS NULL)
+  ) AS orphan_technologies,
+  (
+    SELECT COUNT(*)
+    FROM related_occupations r
+    LEFT JOIN occupations o ON o.code = r.occupation_code AND o.dataset_version = r.dataset_version
+    LEFT JOIN occupations ro ON ro.code = r.related_code AND ro.dataset_version = r.dataset_version
+    WHERE r.dataset_version = ${quoted} AND (o.code IS NULL OR ro.code IS NULL)
+  ) AS orphan_related;`;
 }
 
 function quoteIdentifier(value: string): string {
