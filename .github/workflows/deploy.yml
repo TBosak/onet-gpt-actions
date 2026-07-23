@@ -3,6 +3,9 @@ name: Validate and Deploy Worker
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '_diagnostics/**'
+      - '.github/workflows/diagnose-*.yml'
   workflow_dispatch:
 
 permissions:
