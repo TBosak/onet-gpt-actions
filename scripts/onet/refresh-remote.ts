@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { detectLatestRelease, downloadRelease } from "./source";
 import { writeImportBundle, sqlLiteral } from "./sql";
@@ -146,7 +146,8 @@ async function verifyImport(
   expectedCounts: Record<string, number>,
   occupationCount: number,
 ): Promise<Record<string, number>> {
-  const rows = await executeFile(join(directory, "98-verify.sql"), true);
+  const sql = await readFile(join(directory, "98-verify.sql"), "utf8");
+  const rows = await remoteQuery(sql);
   const row = rows[0];
   if (!row) throw new Error("Verification query returned no metrics.");
   const verification = Object.fromEntries(
