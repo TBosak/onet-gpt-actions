@@ -106,14 +106,14 @@ async function countExistingVersionRows(version: string): Promise<number> {
     "occupation_aliases",
     "occupations",
   ];
-  const query = [
+  const terms = [
     ...tables.map(
-      (table) => `SELECT ${sqlLiteral(table)} AS table_name, COUNT(*) AS row_count FROM ${table} WHERE dataset_version = ${quoted}`,
+      (table) => `(SELECT COUNT(*) FROM ${table} WHERE dataset_version = ${quoted})`,
     ),
-    `SELECT 'dataset_versions' AS table_name, COUNT(*) AS row_count FROM dataset_versions WHERE version = ${quoted}`,
-  ].join(" UNION ALL ");
-  const rows = await remoteQuery(query);
-  return rows.reduce((total, row) => total + Number(row.row_count ?? 0), 0);
+    `(SELECT COUNT(*) FROM dataset_versions WHERE version = ${quoted})`,
+  ];
+  const rows = await remoteQuery(`SELECT ${terms.join(" + ")} AS row_count`);
+  return Number(rows[0]?.row_count ?? 0);
 }
 
 async function remoteQuery(sql: string): Promise<Record<string, unknown>[]> {
