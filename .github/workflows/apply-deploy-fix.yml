@@ -29,143 +29,83 @@ jobs:
           python <<'PY'
           from pathlib import Path
 
-          replacements = {
-              "scripts/onet/source.ts": [(
-                  '''  const versions = [
-              ...html.matchAll(/O\\*NET(?:®|&reg;)?\\s+(\\d{1,2}\\.\\d{1,2})\\s+Database/gi),
-              ...html.matchAll(/db_(\\d{1,2})_(\\d{1,2})_json/gi),
-            ].map((match) => (match[2] ? `${match[1]}.${match[2]}` : match[1]!));''',
-                  '''  const versions = [
-              ...html.matchAll(/O\\*NET(?:®|&reg;)?\\s+(\\d{1,2}\\.\\d{1,2})\\s+Database/gi),
-              ...html.matchAll(/db_(\\d{1,2})_(\\d{1,2})_json/gi),
-            ].flatMap((match) => {
-              const majorOrVersion = match[1];
-              if (!majorOrVersion) return [];
-              return [match[2] ? `${majorOrVersion}.${match[2]}` : majorOrVersion];
-            });'''
-              )],
-              "scripts/onet/transform.ts": [
-                  (
-                      '''      if (value > 0) {
-                occupation.interestHighPoints.push({
-                  rank: rankIndex + 1,
-                  area: IH_AREA_BY_CODE[value]!,
-                  code: value,
-                });
-              }''',
-                      '''      if (value > 0) {
-                const area = IH_AREA_BY_CODE[value];
-                if (!area) throw new Error(`Unknown IH high-point code ${value} for ${occupation.code} ${id}.`);
-                occupation.interestHighPoints.push({
-                  rank: rankIndex + 1,
-                  area,
-                  code: value,
-                });
-              }'''
-                  ),
-                  (
-                      '''    const canonicalName = OI_ELEMENTS.get(id)!;
-            occupation.interests.push({ id, name: canonicalName, value, scale: "OI" });''',
-                      '''    const canonicalName = OI_ELEMENTS.get(id);
-            if (!canonicalName) throw new Error(`Unknown OI dimension ${id} for ${occupation.code}.`);
-            occupation.interests.push({ id, name: canonicalName, value, scale: "OI" });'''
-                  ),
-                  (
-                      '''    const code = text(row, "onetsoc_code");
-            const relatedCode = text(row, "related_onetsoc_code");
-            if (!occupations.has(code) || !occupations.has(relatedCode)) continue;
-            const tierRaw = text(row, "relatedness_tier").toLowerCase();
-            const relationType = tierRaw.startsWith("primary") ? "primary" : "supplemental";
-            const index = number(row, "related_index", "index");
-            occupations.get(code)!.related.push({ code: relatedCode, tier: relationType, index });''',
-                      '''    const code = text(row, "onetsoc_code");
-            const relatedCode = text(row, "related_onetsoc_code");
-            const occupation = occupations.get(code);
-            if (!occupation || !occupations.has(relatedCode)) continue;
-            const tierRaw = text(row, "relatedness_tier").toLowerCase();
-            const relationType = tierRaw.startsWith("primary") ? "primary" : "supplemental";
-            const index = number(row, "related_index", "index");
-            occupation.related.push({ code: relatedCode, tier: relationType, index });'''
-                  ),
-              ],
-              "scripts/validate-interest-profiler.ts": [(
-                  '''    if (rule.items) value.forEach((item, index) => validateSchema(item, rule.items!, `${path}[${index}]`, errors));''',
-                  '''    const itemRule = rule.items;
-            if (itemRule) value.forEach((item, index) => validateSchema(item, itemRule, `${path}[${index}]`, errors));'''
-              )],
-              "scripts/validate-provider-boundaries.ts": [
-                  (
-                      '''const configFiles = [join(root, "wrangler.jsonc")];
-            const allFiles = [...runtimeFiles, ...workflowFiles, ...configFiles];''',
-                      '''const wranglerConfigPath = join(root, "wrangler.jsonc");
-            const configFiles = [wranglerConfigPath];
-            const allFiles = [...runtimeFiles, ...workflowFiles, ...configFiles];'''
-                  ),
-                  (
-                      '''const wrangler = stripJsonComments(contents.get(configFiles[0]!) ?? "");''',
-                      '''const wrangler = stripJsonComments(contents.get(wranglerConfigPath) ?? "");'''
-                  ),
-              ],
-              "src/lib/http.ts": [(
-                  '''  for (let index = 0; index < a.length; index += 1) {
-              difference |= a[index]! ^ b[index]!;
-            }''',
-                  '''  for (let index = 0; index < a.length; index += 1) {
-              difference |= (a[index] ?? 0) ^ (b[index] ?? 0);
-            }'''
-              )],
-              "src/lib/interest-profiler.ts": [(
-                  '''  for (let index = 0; index < left.length; index += 1) {
-              const leftDelta = left[index]! - leftMean;
-              const rightDelta = right[index]! - rightMean;
-              numerator += leftDelta * rightDelta;
-              leftSquares += leftDelta * leftDelta;
-              rightSquares += rightDelta * rightDelta;
-            }''',
-                  '''  for (let index = 0; index < left.length; index += 1) {
-              const leftValue = left[index];
-              const rightValue = right[index];
-              if (leftValue === undefined || rightValue === undefined) return null;
-              const leftDelta = leftValue - leftMean;
-              const rightDelta = rightValue - rightMean;
-              numerator += leftDelta * rightDelta;
-              leftSquares += leftDelta * leftDelta;
-              rightSquares += rightDelta * rightDelta;
-            }'''
-              )],
-              "src/lib/edge.ts": [(
-                  '''  const results = new Array<R>(items.length);
-            let nextIndex = 0;
-            const workers = Array.from({ length: Math.min(Math.max(1, concurrency), items.length) }, async () => {
-              while (true) {
-                const index = nextIndex;
-                nextIndex += 1;
-                if (index >= items.length) return;
-                results[index] = await mapper(items[index]!, index);
-              }
-            });''',
-                  '''  const results = new Array<R>(items.length);
-            const iterator = items.entries();
-            const workers = Array.from({ length: Math.min(Math.max(1, concurrency), items.length) }, async () => {
-              while (true) {
-                const next = iterator.next();
-                if (next.done) return;
-                const [index, item] = next.value;
-                results[index] = await mapper(item, index);
-              }
-            });'''
-              )],
-          }
-
-          for filename, pairs in replacements.items():
+          def replace_once(filename: str, old: str, new: str) -> None:
               path = Path(filename)
               content = path.read_text()
-              for old, new in pairs:
-                  if old not in content:
-                      raise RuntimeError(f"Expected source fragment was not found in {filename}")
-                  content = content.replace(old, new)
-              path.write_text(content)
+              count = content.count(old)
+              if count != 1:
+                  raise RuntimeError(f"Expected exactly one match in {filename}, found {count}: {old[:80]!r}")
+              path.write_text(content.replace(old, new, 1))
+
+          replace_once(
+              "scripts/onet/source.ts",
+              '].map((match) => (match[2] ? `${match[1]}.${match[2]}` : match[1]!));',
+              '].flatMap((match) => {\n    const majorOrVersion = match[1];\n    if (!majorOrVersion) return [];\n    return [match[2] ? `${majorOrVersion}.${match[2]}` : majorOrVersion];\n  });',
+          )
+
+          replace_once(
+              "scripts/onet/transform.ts",
+              'if (value > 0) {\n        occupation.interestHighPoints.push({',
+              'if (value > 0) {\n        const area = IH_AREA_BY_CODE[value];\n        if (!area) throw new Error(`Unknown IH high-point code ${value} for ${occupation.code} ${id}.`);\n        occupation.interestHighPoints.push({',
+          )
+          replace_once("scripts/onet/transform.ts", "area: IH_AREA_BY_CODE[value]!,", "area,")
+          replace_once(
+              "scripts/onet/transform.ts",
+              "const canonicalName = OI_ELEMENTS.get(id)!;",
+              'const canonicalName = OI_ELEMENTS.get(id);\n    if (!canonicalName) throw new Error(`Unknown OI dimension ${id} for ${occupation.code}.`);',
+          )
+          replace_once(
+              "scripts/onet/transform.ts",
+              "if (!occupations.has(code) || !occupations.has(relatedCode)) continue;",
+              "const occupation = occupations.get(code);\n    if (!occupation || !occupations.has(relatedCode)) continue;",
+          )
+          replace_once(
+              "scripts/onet/transform.ts",
+              "occupations.get(code)!.related.push({ code: relatedCode, tier: relationType, index });",
+              "occupation.related.push({ code: relatedCode, tier: relationType, index });",
+          )
+
+          replace_once(
+              "scripts/validate-interest-profiler.ts",
+              'if (rule.items) value.forEach((item, index) => validateSchema(item, rule.items!, `${path}[${index}]`, errors));',
+              'const itemRule = rule.items;\n    if (itemRule) value.forEach((item, index) => validateSchema(item, itemRule, `${path}[${index}]`, errors));',
+          )
+
+          replace_once(
+              "scripts/validate-provider-boundaries.ts",
+              'const configFiles = [join(root, "wrangler.jsonc")];',
+              'const wranglerConfigPath = join(root, "wrangler.jsonc");\nconst configFiles = [wranglerConfigPath];',
+          )
+          replace_once(
+              "scripts/validate-provider-boundaries.ts",
+              "contents.get(configFiles[0]!)",
+              "contents.get(wranglerConfigPath)",
+          )
+
+          replace_once(
+              "src/lib/http.ts",
+              "difference |= a[index]! ^ b[index]!;",
+              "difference |= (a[index] ?? 0) ^ (b[index] ?? 0);",
+          )
+
+          replace_once(
+              "src/lib/interest-profiler.ts",
+              "const leftDelta = left[index]! - leftMean;\n    const rightDelta = right[index]! - rightMean;",
+              "const leftValue = left[index];\n    const rightValue = right[index];\n    if (leftValue === undefined || rightValue === undefined) return null;\n    const leftDelta = leftValue - leftMean;\n    const rightDelta = rightValue - rightMean;",
+          )
+
+          replace_once("src/lib/edge.ts", "let nextIndex = 0;", "const iterator = items.entries();")
+          replace_once(
+              "src/lib/edge.ts",
+              "const index = nextIndex;\n      nextIndex += 1;\n      if (index >= items.length) return;\n      results[index] = await mapper(items[index]!, index);",
+              "const next = iterator.next();\n      if (next.done) return;\n      const [index, item] = next.value;\n      results[index] = await mapper(item, index);",
+          )
           PY
+
+          if grep -R -n -E '[A-Za-z0-9_\]\)]!' --include='*.ts' scripts src test; then
+            echo 'A non-null assertion remains after the repair.' >&2
+            exit 1
+          fi
 
       - name: Install dependencies
         run: bun install
