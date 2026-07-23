@@ -1,0 +1,156 @@
+Deploy diagnostic for commit f4809b4438d8b30b7c438fdcfa16b16d42186fd1
+Run ID: 30031196648
+Run URL: https://github.com/TBosak/onet-gpt-actions/actions/runs/30031196648
+Status: completed
+Conclusion: failure
+Logs: downloaded
+
+Jobs and steps:
+JOB: deploy [completed/failure]
+  STEP: Set up job [completed/success]
+  STEP: Check out repository [completed/success]
+  STEP: Set up Bun [completed/success]
+  STEP: Install dependencies [completed/success]
+  STEP: Validate source, form, provider boundaries, API, and tests [completed/failure]
+  STEP: Deploy existing Worker only [completed/skipped]
+  STEP: Post Set up Bun [completed/skipped]
+  STEP: Post Check out repository [completed/success]
+  STEP: Complete job [completed/success]
+
+Sanitized error excerpts:
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-63-2026-07-23T17:51:35.2423682Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-64-2026-07-23T17:51:35.2424083Z scripts/onet/source.ts:44:60 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-65-2026-07-23T17:51:35.2424492Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:66:2026-07-23T17:51:35.2424609Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-67-2026-07-23T17:51:35.2424886Z   
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-68-2026-07-23T17:51:35.2425624Z     42 │     ...html.matchAll(/O\*NET(?:®|&reg;)?\s+(\d{1,2}\.\d{1,2})\s+Database/gi),
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-69-2026-07-23T17:51:35.2426142Z     43 │     ...html.matchAll(/db_(\d{1,2})_(\d{1,2})_json/gi),
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-70-2026-07-23T17:51:35.2426667Z   > 44 │   ].map((match) => (match[2] ? `${match[1]}.${match[2]}` : match[1]!));
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-71-2026-07-23T17:51:35.2427157Z        │                                                            ^^^^^^^^^
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-72-2026-07-23T17:51:35.2427695Z     45 │   const unique = [...new Set(versions)].sort(compareVersions).reverse();
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:73:2026-07-23T17:51:35.2428422Z     46 │   if (!unique[0]) throw new Error("Could not detect an O*NET release from the official database page.");
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-74-2026-07-23T17:51:35.2428943Z   
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-75-2026-07-23T17:51:35.2429065Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-76-2026-07-23T17:51:35.2429476Z scripts/onet/transform.ts:201:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-77-2026-07-23T17:51:35.2430199Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:78:2026-07-23T17:51:35.2430332Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-79-2026-07-23T17:51:35.2430610Z   
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-80-2026-07-23T17:51:35.2430948Z     199 │         occupation.interestHighPoints.push({
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-81-2026-07-23T17:51:35.2431371Z     200 │           rank: rankIndex + 1,
+--
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-87-2026-07-23T17:51:35.2433081Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-88-2026-07-23T17:51:35.2433484Z scripts/onet/transform.ts:217:27 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-89-2026-07-23T17:51:35.2433873Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:90:2026-07-23T17:51:35.2433990Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-91-2026-07-23T17:51:35.2434261Z   
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-92-2026-07-23T17:51:35.2434735Z     215 │     dimensions.add(id);
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-93-2026-07-23T17:51:35.2435176Z     216 │     oiDimensionsByOccupation.set(occupation.code, dimensions);
+--
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-99-2026-07-23T17:51:35.2438314Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-100-2026-07-23T17:51:35.2438941Z scripts/onet/transform.ts:289:5 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-101-2026-07-23T17:51:35.2439401Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:102:2026-07-23T17:51:35.2439905Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-103-2026-07-23T17:51:35.2440265Z   
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-104-2026-07-23T17:51:35.2440911Z     287 │     const relationType = tierRaw.startsWith("primary") ? "primary" : "supplemental";
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-105-2026-07-23T17:51:35.2441624Z     288 │     const index = number(row, "related_index", "index");
+--
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-143-2026-07-23T17:51:35.2472511Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-144-2026-07-23T17:51:35.2473146Z scripts/validate-interest-profiler.ts:84:73 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-145-2026-07-23T17:51:35.2473782Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:146:2026-07-23T17:51:35.2473946Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-147-2026-07-23T17:51:35.2474317Z   
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-148-2026-07-23T17:51:35.2475135Z     82 │     if (rule.minItems !== undefined && value.length < rule.minItems) errors.push(`${path} has too few items.`);
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-149-2026-07-23T17:51:35.2476478Z     83 │     if (rule.maxItems !== undefined && value.length > rule.maxItems) errors.push(`${path} has too many items.`);
+--
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-155-2026-07-23T17:51:35.2481072Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-156-2026-07-23T17:51:35.2481711Z scripts/validate-provider-boundaries.ts:41:49 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-157-2026-07-23T17:51:35.2482352Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:158:2026-07-23T17:51:35.2482568Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-159-2026-07-23T17:51:35.2482942Z   
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-160-2026-07-23T17:51:35.2483240Z     39 │ }
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-161-2026-07-23T17:51:35.2483548Z     40 │ 
+--
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-167-2026-07-23T17:51:35.2487665Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-168-2026-07-23T17:51:35.2488267Z src/lib/http.ts:70:19 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-169-2026-07-23T17:51:35.2488871Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:170:2026-07-23T17:51:35.2489029Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-171-2026-07-23T17:51:35.2489398Z   
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-172-2026-07-23T17:51:35.2490001Z     68 │   let difference = left.length === right.length ? 0 : 1;
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-173-2026-07-23T17:51:35.2490678Z     69 │   for (let index = 0; index < a.length; index += 1) {
+--
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-321-2026-07-23T17:51:35.2584311Z   × Some errors were emitted while running checks.
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-322-2026-07-23T17:51:35.2584782Z   
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt-323-2026-07-23T17:51:35.2584931Z 
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:324:2026-07-23T17:51:35.2626312Z error: script "lint" exited with code 1
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:325:2026-07-23T17:51:35.2632455Z error: script "ci" exited with code 1
+/tmp/deploy-logs/deploy/5_Validate source, form, provider boundaries, API, and tests.txt:326:2026-07-23T17:51:35.2650156Z ##[error]Process completed with exit code 1.
+--
+/tmp/deploy-logs/0_deploy.txt-196-2026-07-23T17:51:35.2423686Z 
+/tmp/deploy-logs/0_deploy.txt-197-2026-07-23T17:51:35.2424088Z scripts/onet/source.ts:44:60 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/0_deploy.txt-198-2026-07-23T17:51:35.2424496Z 
+/tmp/deploy-logs/0_deploy.txt:199:2026-07-23T17:51:35.2424613Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/0_deploy.txt-200-2026-07-23T17:51:35.2425222Z   
+/tmp/deploy-logs/0_deploy.txt-201-2026-07-23T17:51:35.2425629Z     42 │     ...html.matchAll(/O\*NET(?:®|&reg;)?\s+(\d{1,2}\.\d{1,2})\s+Database/gi),
+/tmp/deploy-logs/0_deploy.txt-202-2026-07-23T17:51:35.2426146Z     43 │     ...html.matchAll(/db_(\d{1,2})_(\d{1,2})_json/gi),
+/tmp/deploy-logs/0_deploy.txt-203-2026-07-23T17:51:35.2426674Z   > 44 │   ].map((match) => (match[2] ? `${match[1]}.${match[2]}` : match[1]!));
+/tmp/deploy-logs/0_deploy.txt-204-2026-07-23T17:51:35.2427160Z        │                                                            ^^^^^^^^^
+/tmp/deploy-logs/0_deploy.txt-205-2026-07-23T17:51:35.2427700Z     45 │   const unique = [...new Set(versions)].sort(compareVersions).reverse();
+/tmp/deploy-logs/0_deploy.txt:206:2026-07-23T17:51:35.2428436Z     46 │   if (!unique[0]) throw new Error("Could not detect an O*NET release from the official database page.");
+/tmp/deploy-logs/0_deploy.txt-207-2026-07-23T17:51:35.2428947Z   
+/tmp/deploy-logs/0_deploy.txt-208-2026-07-23T17:51:35.2429069Z 
+/tmp/deploy-logs/0_deploy.txt-209-2026-07-23T17:51:35.2429481Z scripts/onet/transform.ts:201:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/0_deploy.txt-210-2026-07-23T17:51:35.2430206Z 
+/tmp/deploy-logs/0_deploy.txt:211:2026-07-23T17:51:35.2430336Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/0_deploy.txt-212-2026-07-23T17:51:35.2430613Z   
+/tmp/deploy-logs/0_deploy.txt-213-2026-07-23T17:51:35.2430978Z     199 │         occupation.interestHighPoints.push({
+/tmp/deploy-logs/0_deploy.txt-214-2026-07-23T17:51:35.2431374Z     200 │           rank: rankIndex + 1,
+--
+/tmp/deploy-logs/0_deploy.txt-220-2026-07-23T17:51:35.2433084Z 
+/tmp/deploy-logs/0_deploy.txt-221-2026-07-23T17:51:35.2433490Z scripts/onet/transform.ts:217:27 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/0_deploy.txt-222-2026-07-23T17:51:35.2433876Z 
+/tmp/deploy-logs/0_deploy.txt:223:2026-07-23T17:51:35.2433993Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/0_deploy.txt-224-2026-07-23T17:51:35.2434264Z   
+/tmp/deploy-logs/0_deploy.txt-225-2026-07-23T17:51:35.2434740Z     215 │     dimensions.add(id);
+/tmp/deploy-logs/0_deploy.txt-226-2026-07-23T17:51:35.2435180Z     216 │     oiDimensionsByOccupation.set(occupation.code, dimensions);
+--
+/tmp/deploy-logs/0_deploy.txt-232-2026-07-23T17:51:35.2438317Z 
+/tmp/deploy-logs/0_deploy.txt-233-2026-07-23T17:51:35.2438947Z scripts/onet/transform.ts:289:5 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/0_deploy.txt-234-2026-07-23T17:51:35.2439404Z 
+/tmp/deploy-logs/0_deploy.txt:235:2026-07-23T17:51:35.2439913Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/0_deploy.txt-236-2026-07-23T17:51:35.2440270Z   
+/tmp/deploy-logs/0_deploy.txt-237-2026-07-23T17:51:35.2440918Z     287 │     const relationType = tierRaw.startsWith("primary") ? "primary" : "supplemental";
+/tmp/deploy-logs/0_deploy.txt-238-2026-07-23T17:51:35.2441628Z     288 │     const index = number(row, "related_index", "index");
+--
+/tmp/deploy-logs/0_deploy.txt-276-2026-07-23T17:51:35.2472516Z 
+/tmp/deploy-logs/0_deploy.txt-277-2026-07-23T17:51:35.2473153Z scripts/validate-interest-profiler.ts:84:73 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/0_deploy.txt-278-2026-07-23T17:51:35.2473788Z 
+/tmp/deploy-logs/0_deploy.txt:279:2026-07-23T17:51:35.2473953Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/0_deploy.txt-280-2026-07-23T17:51:35.2474321Z   
+/tmp/deploy-logs/0_deploy.txt-281-2026-07-23T17:51:35.2475182Z     82 │     if (rule.minItems !== undefined && value.length < rule.minItems) errors.push(`${path} has too few items.`);
+/tmp/deploy-logs/0_deploy.txt-282-2026-07-23T17:51:35.2476485Z     83 │     if (rule.maxItems !== undefined && value.length > rule.maxItems) errors.push(`${path} has too many items.`);
+--
+/tmp/deploy-logs/0_deploy.txt-288-2026-07-23T17:51:35.2481077Z 
+/tmp/deploy-logs/0_deploy.txt-289-2026-07-23T17:51:35.2481717Z scripts/validate-provider-boundaries.ts:41:49 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/0_deploy.txt-290-2026-07-23T17:51:35.2482356Z 
+/tmp/deploy-logs/0_deploy.txt:291:2026-07-23T17:51:35.2482573Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/0_deploy.txt-292-2026-07-23T17:51:35.2482946Z   
+/tmp/deploy-logs/0_deploy.txt-293-2026-07-23T17:51:35.2483245Z     39 │ }
+/tmp/deploy-logs/0_deploy.txt-294-2026-07-23T17:51:35.2483555Z     40 │ 
+--
+/tmp/deploy-logs/0_deploy.txt-300-2026-07-23T17:51:35.2487670Z 
+/tmp/deploy-logs/0_deploy.txt-301-2026-07-23T17:51:35.2488280Z src/lib/http.ts:70:19 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/tmp/deploy-logs/0_deploy.txt-302-2026-07-23T17:51:35.2488876Z 
+/tmp/deploy-logs/0_deploy.txt:303:2026-07-23T17:51:35.2489035Z   ! Forbidden non-null assertion.
+/tmp/deploy-logs/0_deploy.txt-304-2026-07-23T17:51:35.2489402Z   
+/tmp/deploy-logs/0_deploy.txt-305-2026-07-23T17:51:35.2490008Z     68 │   let difference = left.length === right.length ? 0 : 1;
+/tmp/deploy-logs/0_deploy.txt-306-2026-07-23T17:51:35.2490685Z     69 │   for (let index = 0; index < a.length; index += 1) {
+--
+/tmp/deploy-logs/0_deploy.txt-454-2026-07-23T17:51:35.2584318Z   × Some errors were emitted while running checks.
+/tmp/deploy-logs/0_deploy.txt-455-2026-07-23T17:51:35.2584787Z   
+/tmp/deploy-logs/0_deploy.txt-456-2026-07-23T17:51:35.2584935Z 
+/tmp/deploy-logs/0_deploy.txt:457:2026-07-23T17:51:35.2626338Z error: script "lint" exited with code 1
+/tmp/deploy-logs/0_deploy.txt:458:2026-07-23T17:51:35.2632477Z error: script "ci" exited with code 1
+/tmp/deploy-logs/0_deploy.txt:459:2026-07-23T17:51:35.2650185Z ##[error]Process completed with exit code 1.
+/tmp/deploy-logs/0_deploy.txt-460-2026-07-23T17:51:35.2806506Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+/tmp/deploy-logs/0_deploy.txt-461-2026-07-23T17:51:35.2807689Z Post job cleanup.
+/tmp/deploy-logs/0_deploy.txt-462-2026-07-23T17:51:35.3686238Z [command]/usr/bin/git version
