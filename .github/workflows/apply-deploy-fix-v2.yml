@@ -114,17 +114,41 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Run lint and capture exact output
+        id: lint
+        continue-on-error: true
+        shell: bash
+        run: |
+          mkdir -p _diagnostics
+          bun run lint > _diagnostics/biome-lint.txt 2>&1
+
+      - name: Publish lint diagnostic on failure
+        if: steps.lint.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add _diagnostics/biome-lint.txt
+          git commit -m 'chore: capture branch lint diagnostics'
+          git push origin HEAD:fix/deploy-pipeline
+          exit 1
+
       - name: Run complete validation suite
+        if: steps.lint.outcome == 'success'
         run: bun run ci
 
       - name: Verify Worker bundle without deploying
+        if: steps.lint.outcome == 'success'
         run: bunx wrangler deploy --dry-run --outdir dist/dry-run
 
       - name: Commit validated repair
+        if: steps.lint.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
           rm -f .github/workflows/apply-deploy-fix.yml .github/workflows/apply-deploy-fix-v2.yml
+          rm -rf _diagnostics
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
