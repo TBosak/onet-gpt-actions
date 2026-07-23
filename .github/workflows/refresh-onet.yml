@@ -1,4 +1,4 @@
-# One-shot staged verification after Wrangler JSON parser correction.
+# One-shot staged verification using D1 command output.
 name: Refresh O*NET Data
 
 on:
