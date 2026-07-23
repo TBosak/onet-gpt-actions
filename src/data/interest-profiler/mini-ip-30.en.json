@@ -1,0 +1,187 @@
+{
+  "formId": "mini-ip-30",
+  "formVersion": "mini-ip-30.en-2025-10-07",
+  "language": "en",
+  "sourceUrl": "https://services.onetcenter.org/reference/mnm/ip/ip_questions_30",
+  "sourceRetrievedAt": "2026-07-23T15:35:09Z",
+  "sourceSha256": "3212159a65c40fdd593598c2ae43af26d8964c2880b52f319ee0b90b8f6b6758",
+  "license": {
+    "name": "CC BY-ND 4.0",
+    "attribution": "This application includes information from the O*NET® Career Exploration Tools by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under the CC BY-ND 4.0 license. O*NET® is a trademark of USDOL/ETA.",
+    "modified": false
+  },
+  "answerOptions": [
+    {
+      "value": 1,
+      "label": "Strongly Dislike"
+    },
+    {
+      "value": 2,
+      "label": "Dislike"
+    },
+    {
+      "value": 3,
+      "label": "Unsure"
+    },
+    {
+      "value": 4,
+      "label": "Like"
+    },
+    {
+      "value": 5,
+      "label": "Strongly Like"
+    }
+  ],
+  "questions": [
+    {
+      "index": 1,
+      "area": "realistic",
+      "text": "Build kitchen cabinets"
+    },
+    {
+      "index": 2,
+      "area": "investigative",
+      "text": "Develop a new medicine"
+    },
+    {
+      "index": 3,
+      "area": "artistic",
+      "text": "Write books or plays"
+    },
+    {
+      "index": 4,
+      "area": "social",
+      "text": "Help people with personal or emotional problems"
+    },
+    {
+      "index": 5,
+      "area": "enterprising",
+      "text": "Manage a department within a large company"
+    },
+    {
+      "index": 6,
+      "area": "conventional",
+      "text": "Install software across computers on a large network"
+    },
+    {
+      "index": 7,
+      "area": "realistic",
+      "text": "Repair household appliances"
+    },
+    {
+      "index": 8,
+      "area": "investigative",
+      "text": "Study ways to reduce water pollution"
+    },
+    {
+      "index": 9,
+      "area": "artistic",
+      "text": "Compose or arrange music"
+    },
+    {
+      "index": 10,
+      "area": "social",
+      "text": "Give career guidance to people"
+    },
+    {
+      "index": 11,
+      "area": "enterprising",
+      "text": "Start your own business"
+    },
+    {
+      "index": 12,
+      "area": "conventional",
+      "text": "Operate a calculator"
+    },
+    {
+      "index": 13,
+      "area": "realistic",
+      "text": "Assemble electronic parts"
+    },
+    {
+      "index": 14,
+      "area": "investigative",
+      "text": "Conduct chemical experiments"
+    },
+    {
+      "index": 15,
+      "area": "artistic",
+      "text": "Create special effects for movies"
+    },
+    {
+      "index": 16,
+      "area": "social",
+      "text": "Perform rehabilitation therapy"
+    },
+    {
+      "index": 17,
+      "area": "enterprising",
+      "text": "Negotiate business contracts"
+    },
+    {
+      "index": 18,
+      "area": "conventional",
+      "text": "Keep shipping and receiving records"
+    },
+    {
+      "index": 19,
+      "area": "realistic",
+      "text": "Drive a truck to deliver packages to offices and homes"
+    },
+    {
+      "index": 20,
+      "area": "investigative",
+      "text": "Examine blood samples using a microscope"
+    },
+    {
+      "index": 21,
+      "area": "artistic",
+      "text": "Paint sets for plays"
+    },
+    {
+      "index": 22,
+      "area": "social",
+      "text": "Do volunteer work at a non-profit organization"
+    },
+    {
+      "index": 23,
+      "area": "enterprising",
+      "text": "Market a new line of clothing"
+    },
+    {
+      "index": 24,
+      "area": "conventional",
+      "text": "Inventory supplies using a hand-held computer"
+    },
+    {
+      "index": 25,
+      "area": "realistic",
+      "text": "Test the quality of parts before shipment"
+    },
+    {
+      "index": 26,
+      "area": "investigative",
+      "text": "Develop a way to better predict the weather"
+    },
+    {
+      "index": 27,
+      "area": "artistic",
+      "text": "Write scripts for movies or television shows"
+    },
+    {
+      "index": 28,
+      "area": "social",
+      "text": "Teach a high-school class"
+    },
+    {
+      "index": 29,
+      "area": "enterprising",
+      "text": "Sell merchandise at a department store"
+    },
+    {
+      "index": 30,
+      "area": "conventional",
+      "text": "Stamp, sort, and distribute mail for an organization"
+    }
+  ]
+}

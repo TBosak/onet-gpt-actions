@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onet-gpt-api.example/schemas/mini-ip-form.schema.json",
+  "title": "Vendored O*NET Mini Interest Profiler Form",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "formId",
+    "formVersion",
+    "language",
+    "license",
+    "answerOptions",
+    "questions"
+  ],
+  "properties": {
+    "formId": {
+      "const": "mini-ip-30"
+    },
+    "formVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en"
+      ]
+    },
+    "sourceUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "sourceRetrievedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sourceSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "attribution",
+        "modified"
+      ],
+      "properties": {
+        "name": {
+          "const": "CC BY-ND 4.0"
+        },
+        "attribution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "modified": {
+          "const": false
+        }
+      }
+    },
+    "answerOptions": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "value",
+          "label"
+        ],
+        "properties": {
+          "value": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 30,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "area",
+          "text"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "area": {
+            "type": "string",
+            "enum": [
+              "realistic",
+              "investigative",
+              "artistic",
+              "social",
+              "enterprising",
+              "conventional"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

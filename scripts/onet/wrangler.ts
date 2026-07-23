@@ -1,0 +1,72 @@
+import { mkdir, appendFile } from "node:fs/promises";
+import { dirname } from "node:path";
+
+export interface WranglerResult {
+  stdout: string;
+  stderr: string;
+}
+
+export async function runWrangler(args: string[], logPath?: string): Promise<WranglerResult> {
+  const command = ["bunx", "wrangler", ...args];
+  const process = Bun.spawn(command, {
+    stdout: "pipe",
+    stderr: "pipe",
+    env: processEnv(),
+  });
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(process.stdout).text(),
+    new Response(process.stderr).text(),
+    process.exited,
+  ]);
+  if (logPath) {
+    await mkdir(dirname(logPath), { recursive: true });
+    await appendFile(
+      logPath,
+      `$ ${command.map(shellWord).join(" ")}\n${redact(stdout)}${redact(stderr)}\n`,
+    );
+  }
+  if (exitCode !== 0) {
+    throw new Error(`Wrangler exited with code ${exitCode}: ${redact(stderr || stdout).slice(-2_000)}`);
+  }
+  return { stdout, stderr };
+}
+
+export function parseD1Rows(stdout: string): Record<string, unknown>[] {
+  const parsed = JSON.parse(stdout) as unknown;
+  const arrays: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
+  for (const item of arrays) {
+    if (!item || typeof item !== "object") continue;
+    const result = item as Record<string, unknown>;
+    if (Array.isArray(result.results)) return result.results.filter(isObject) as Record<string, unknown>[];
+    if (result.result && typeof result.result === "object") {
+      const nested = result.result as Record<string, unknown>;
+      if (Array.isArray(nested.results)) return nested.results.filter(isObject) as Record<string, unknown>[];
+    }
+  }
+  return [];
+}
+
+function processEnv(): Record<string, string> {
+  const env: Record<string, string> = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined) env[key] = value;
+  }
+  return env;
+}
+
+function shellWord(value: string): string {
+  return /^[a-zA-Z0-9_./:=@-]+$/.test(value) ? value : JSON.stringify(value);
+}
+
+function redact(value: string): string {
+  let redacted = value;
+  for (const key of ["CLOUDFLARE_API_TOKEN", "GPT_API_KEY"]) {
+    const secret = process.env[key];
+    if (secret) redacted = redacted.replaceAll(secret, "[REDACTED]");
+  }
+  return redacted;
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}

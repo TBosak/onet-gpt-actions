@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "onet-gpt-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-23",
+  "workers_dev": true,
+  "preview_urls": false,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "onet-gpt-data",
+      "database_id": "49013492-f380-4937-8926-20e6fb0d5dc9",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "secrets": {
+    "required": [
+      "GPT_API_KEY",
+      "CAREERONESTOP_USER_ID",
+      "CAREERONESTOP_API_TOKEN"
+    ]
+  }
+}
