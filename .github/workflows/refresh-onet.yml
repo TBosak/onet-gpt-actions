@@ -1,11 +1,6 @@
-# One-shot verification of the scheduled refresh repair.
 name: Refresh O*NET Data
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/refresh-onet.yml'
   workflow_dispatch:
     inputs:
       force:
