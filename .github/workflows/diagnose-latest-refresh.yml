@@ -1,0 +1,81 @@
+name: Diagnose latest scheduled O*NET refresh
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnose-latest-refresh.yml'
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Capture latest scheduled refresh failure
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _diagnostics /tmp/refresh-logs
+
+          runs=$(gh api \
+            -H 'Accept: application/vnd.github+json' \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/refresh-onet.yml/runs?event=schedule&per_page=10")
+          run=$(jq -c '.workflow_runs | sort_by(.created_at) | reverse | .[0] // {}' <<<"$runs")
+          run_id=$(jq -r '.id // empty' <<<"$run")
+
+          if [[ -z "$run_id" ]]; then
+            echo 'No scheduled refresh run found.' > _diagnostics/latest-refresh.txt
+          else
+            run_json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}")
+            jobs_json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100")
+            log_status=unavailable
+            if gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/logs" > /tmp/refresh-logs.zip 2>/tmp/log-error.txt; then
+              if unzip -q /tmp/refresh-logs.zip -d /tmp/refresh-logs; then
+                log_status=downloaded
+              fi
+            fi
+
+            {
+              echo "Run ID: ${run_id}"
+              echo "Run URL: $(jq -r '.html_url' <<<"$run_json")"
+              echo "Created: $(jq -r '.created_at' <<<"$run_json")"
+              echo "Updated: $(jq -r '.updated_at' <<<"$run_json")"
+              echo "Status: $(jq -r '.status' <<<"$run_json")"
+              echo "Conclusion: $(jq -r '.conclusion' <<<"$run_json")"
+              echo "Head SHA: $(jq -r '.head_sha' <<<"$run_json")"
+              echo "Logs: ${log_status}"
+              echo
+              echo 'Jobs and steps:'
+              jq -r '.jobs[] | "JOB: \(.id) \(.name) [\(.status)/\(.conclusion)]\n" + ([.steps[]? | "  STEP: \(.name) [\(.status)/\(.conclusion)]"] | join("\n"))' <<<"$jobs_json"
+              echo
+              echo 'Sanitized failure excerpts:'
+              if [[ "$log_status" == downloaded ]]; then
+                grep -R -i -E -n -C 4 '(^|[^a-z])(error|failed|failure|fatal|exception|invalid|not found|too many|exceed|unauthorized|forbidden|rate limit|timed out|timeout)([^a-z]|$)' /tmp/refresh-logs \
+                  | sed -E 's/(token|password|secret|authorization|api[_ -]?key)[=: ]+[^ ]+/\1=[REDACTED]/Ig' \
+                  | head -n 600 || true
+              else
+                cat /tmp/log-error.txt 2>/dev/null || true
+              fi
+            } > _diagnostics/latest-refresh.txt
+          fi
+
+      - name: Commit diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add _diagnostics/latest-refresh.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'chore: capture latest scheduled refresh failure'
+          git push origin HEAD:main
