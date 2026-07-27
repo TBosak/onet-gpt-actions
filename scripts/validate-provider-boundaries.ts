@@ -51,7 +51,11 @@ const openapiText = JSON.stringify(openapi);
 assert(!openapiText.includes("CAREERONESTOP_USER_ID"), "OpenAPI must not expose the CareerOneStop user-ID binding name.");
 assert(!openapiText.includes("CAREERONESTOP_API_TOKEN"), "OpenAPI must not expose the CareerOneStop token binding name.");
 assert(!openapiText.includes("Bearer API Token"), "OpenAPI must not expose upstream authorization details.");
-assert(operationIds().length === 20, "The final GPT-facing OpenAPI surface must contain exactly 20 operations.");
+assert(
+  !Object.keys(openapi.paths).some((path) => path.startsWith("/v1/edge/")),
+  "CareerOneStop-backed /v1/edge routes must not appear in the GPT-facing Worker OpenAPI contract.",
+);
+assert(operationIds().length === 14, "The GPT-facing Worker OpenAPI surface must contain exactly 14 local operations.");
 
 const prohibitedLogPatterns = [
   /console\.(?:log|info|warn|error|debug)\([^\n]*(?:CAREERONESTOP_USER_ID|CAREERONESTOP_API_TOKEN)/,
@@ -65,7 +69,7 @@ for (const path of runtimeFiles) {
 }
 
 console.log(
-  "Validated provider boundaries: one CareerOneStop adapter, no O*NET Web Services runtime calls, no provider secrets in workflows/OpenAPI/logging, and exactly 20 operations.",
+  "Validated provider boundaries: one CareerOneStop adapter, no O*NET Web Services runtime calls, no provider secrets in workflows/OpenAPI/logging, and 14 local GPT-facing operations with no exposed /v1/edge routes.",
 );
 
 async function collect(directory: string): Promise<string[]> {
