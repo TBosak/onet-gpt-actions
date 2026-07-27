@@ -1,0 +1,42 @@
+Run ID: 30254336509
+Run URL: https://github.com/TBosak/onet-gpt-actions/actions/runs/30254336509
+Created: 2026-07-27T09:31:39Z
+Updated: 2026-07-27T09:31:56Z
+Status: completed
+Conclusion: failure
+Head SHA: 3a002f393462c08722003e5ac457d5d231af3260
+Logs: downloaded
+
+Jobs and steps:
+JOB: 89939293105 refresh [completed/failure]
+  STEP: Set up job [completed/success]
+  STEP: Check out repository [completed/success]
+  STEP: Set up Bun [completed/success]
+  STEP: Install dependencies [completed/success]
+  STEP: Validate form, provider boundaries, importer, API, and tests [completed/failure]
+  STEP: Verify Cloudflare data-refresh credentials [completed/skipped]
+  STEP: Detect release, then transform, validate, import, and activate only when changed [completed/skipped]
+  STEP: Preserve refresh logs, manifests, checksums, and generated SQL [completed/success]
+  STEP: Post Set up Bun [completed/skipped]
+  STEP: Post Check out repository [completed/success]
+  STEP: Complete job [completed/success]
+
+Sanitized failure excerpts:
+/tmp/refresh-logs/0_refresh.txt-180-2026-07-27T09:31:52.5519750Z 83 |   return value.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+/tmp/refresh-logs/0_refresh.txt-181-2026-07-27T09:31:52.5520671Z 84 | }
+/tmp/refresh-logs/0_refresh.txt-182-2026-07-27T09:31:52.5521160Z 85 | 
+/tmp/refresh-logs/0_refresh.txt-183-2026-07-27T09:31:52.5521546Z 86 | function assert(condition: unknown, message: string): asserts condition {
+/tmp/refresh-logs/0_refresh.txt:184:2026-07-27T09:31:52.5522012Z 87 |   if (!condition) throw new Error(message);
+/tmp/refresh-logs/0_refresh.txt-185-2026-07-27T09:31:52.5522309Z                                  ^
+/tmp/refresh-logs/0_refresh.txt:186:2026-07-27T09:31:52.5522690Z error: The final GPT-facing OpenAPI surface must contain exactly 20 operations.
+/tmp/refresh-logs/0_refresh.txt-187-2026-07-27T09:31:52.5523378Z       at assert (/home/runner/work/onet-gpt-actions/onet-gpt-actions/scripts/validate-provider-boundaries.ts:87:29)
+/tmp/refresh-logs/0_refresh.txt-188-2026-07-27T09:31:52.5524223Z       at /home/runner/work/onet-gpt-actions/onet-gpt-actions/scripts/validate-provider-boundaries.ts:54:1
+/tmp/refresh-logs/0_refresh.txt-189-2026-07-27T09:31:52.5524636Z 
+/tmp/refresh-logs/0_refresh.txt-190-2026-07-27T09:31:52.5524736Z Bun v1.3.14 (Linux x64)
+/tmp/refresh-logs/0_refresh.txt:191:2026-07-27T09:31:52.5536180Z error: script "validate:providers" exited with code 1
+/tmp/refresh-logs/0_refresh.txt:192:2026-07-27T09:31:52.5542847Z error: script "ci" exited with code 1
+/tmp/refresh-logs/0_refresh.txt:193:2026-07-27T09:31:52.5560775Z ##[error]Process completed with exit code 1.
+/tmp/refresh-logs/0_refresh.txt-194-2026-07-27T09:31:52.5684623Z ##[group]Run actions/upload-artifact@v7.0.1
+/tmp/refresh-logs/0_refresh.txt-195-2026-07-27T09:31:52.5684938Z with:
+/tmp/refresh-logs/0_refresh.txt-196-2026-07-27T09:31:52.5685144Z   name: onet-refresh-30254336509
+/tmp/refresh-logs/0_refresh.txt-197-2026-07-27T09:31:52.5685399Z   path: dist/onet/
